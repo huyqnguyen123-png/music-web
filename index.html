@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="MusicPro">
+    <meta property="og:type" content="website"> 
+    <meta property="og:url" content="https://www.musicpro.com">
+    <meta property="og:description" content="An online music streaming website">
+    <meta property="og:image" content="logo.png">
+    <title>MusicPro</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/logo2.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/logo2.png">
+
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="header-left">
+            <div class="logo">
+                <img src="logo.png" alt="MusicPro Logo" class="logo-img">
+            <h1>MusicPro</h1>
+        </div>
+
+        </div>
+        <div class="search-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="search-input" placeholder="Tìm kiếm bài hát, nghệ sĩ..." autocomplete="off">
+            <button id="btn-search-trigger"><i class="fas fa-arrow-right"></i></button>
+            <div id="search-suggestions" class="suggestions-box hidden"></div>
+        </div>
+    </header>
+
+    <button id="sidebar-toggle-btn" class="floating-menu-btn" title="Đóng/Mở thư viện">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <main>
+        <section class="hero-section">
+            <h1>Albums của tháng</h1>
+            <div class="carousel-wrapper">
+                <button id="btn-prev" class="nav-btn btn-left"><i class="fas fa-chevron-left"></i></button>
+                <div id="album-container"></div>
+                <button id="btn-next" class="nav-btn btn-right"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </section>
+
+        <div class="main-content">
+            <section class="sub-section">
+                <div class="section-header"><h2>Mood & Vibe</h2><a href="#" class="see-all">Xem tất cả</a></div>
+                <div class="grid-mood" id="mood-container"></div>
+            </section>
+
+            <section class="sub-section">
+                <div class="section-header"><h2>Dòng nhạc yêu thích</h2></div>
+                <div class="grid-genre" id="genre-container"></div>
+            </section>
+
+            <section class="sub-section">
+                <div class="section-header"><h2>Mới phát hành</h2></div>
+                <div class="grid-standard" id="new-release-container"></div>
+            </section>
+
+            <section class="sub-section">
+                <div class="section-header"><h2>Nghệ sĩ nổi bật</h2></div>
+                <div id="artist-container" class="grid-artist"></div>
+            </section>
+            
+            <div style="height: 120px;"></div>
+        </div>
+
+        <section id="search-view" class="view-section hidden">
+            <div class="search-header">
+                <button id="btn-back-home" class="btn-text"><i class="fas fa-arrow-left"></i> Quay lại</button>
+                <h2 id="search-title">Kết quả tìm kiếm</h2>
+            </div>
+            <div id="song-list" class="song-list-wrapper"></div>
+        </section>
+    </main>
+
+    <aside id="my-sidebar" class="sidebar">
+        <div class="lib-header">
+            <div class="lib-title" id="btn-toggle-library" title="Bấm để đóng thư viện">
+                <i class="fas fa-book"></i><span>Thư viện</span>
+            </div>
+    
+            <div class="lib-actions">
+                <button id="btn-create-playlist" class="lib-icon-btn rotate-icon" title="Tạo playlist mới">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="lib-filters">
+            <button class="chip active">Tất cả</button>
+            <button class="chip">Playlists</button>
+            <button class="chip">Nghệ sĩ</button>
+        </div>
+
+        <div id="create-playlist-box" class="create-box hidden">
+            <input type="text" id="playlist-name-input" placeholder="Nhập tên playlist rồi Enter...">
+        </div>
+
+        <div class="lib-content" id="library-content">
+            <div class="lib-item" id="btn-view-liked">
+                <img src="https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?w=300" class="lib-img-square" alt="Liked Songs">
+                <div class="lib-info">
+                    <h4>Bài hát đã thích</h4>
+                    <p id="liked-count">Playlist • 0 bài</p> 
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div id="player-bar" class="player-bar hidden-bar">
+        <div class="progress-container">
+            <span id="current-time">0:00</span>
+            <input type="range" id="progress-bar" value="0" step="1" min="0" max="100">
+            <span id="duration">0:00</span>
+        </div>
+
+        <div class="player-wrapper">
+            <div class="player-info">
+                <img id="p-img" src="" class="spin-disk">
+                <div class="p-text">
+                    <h4 id="p-title">Title</h4>
+                    <p id="p-artist">Artist</p>
+                </div>
+            </div>
+
+            <div class="player-controls">
+                <button id="btn-heart" class="heart-btn" title="Thích"><i class="fas fa-heart"></i></button>
+                <button id="btn-add-pl" class="add-pl-btn" title="Thêm vào Playlist"><i class="fas fa-plus-circle"></i></button>
+            
+                <button id="btn-shuffle"><i class="fas fa-random"></i></button>
+                <button id="btn-prev-song"><i class="fas fa-step-backward"></i></button>
+                <button id="btn-play" class="main-play-btn"><i class="fas fa-play"></i></button>
+                <button id="btn-next-song"><i class="fas fa-step-forward"></i></button>
+                <button id="btn-loop"><i class="fas fa-redo"></i></button>
+            </div>
+
+            <div class="player-extras">
+                <div class="volume-wrapper">
+                    <div class="volume-slider-box hidden">
+                        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
+                    </div>
+                    <button id="btn-volume"><i class="fas fa-volume-up"></i></button>
+                </div>
+            
+                <button id="btn-close" class="close-btn"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="playlist-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Chọn Playlist</h3>
+                <button id="close-modal-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="modal-playlist-list" class="modal-list"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
