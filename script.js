@@ -408,21 +408,18 @@ function loadAndPlay(index) {
         playerBar.classList.remove('hidden-bar');
         playerBar.classList.remove('collapsed');
         playerBar.classList.add('playing');
-        playerBar.style.transform = "translateY(0)";
-        playerBar.style.opacity = "1";
-        playerBar.style.display = "flex"; 
+        playerBar.style.transform = ""; 
+        playerBar.style.opacity = "";
+        playerBar.style.display = ""; 
     }
 
     currentAudio.src = song.src;
-    currentAudio.play().catch(e => console.error("Lỗi phát nhạc:", e));
+    currentAudio.play().catch(e => console.error(e));
     isPlaying = true;
     updatePlayButton();
 
-    if (typeof isViewingLiked !== 'undefined' && isViewingLiked) {
-        renderSongList(likedSongs);
-    } else if (typeof searchResults !== 'undefined') {
-        renderSongList(searchResults);
-    }
+    if (typeof isViewingLiked !== 'undefined' && isViewingLiked) renderSongList(likedSongs);
+    else if (typeof searchResults !== 'undefined') renderSongList(searchResults);
 
     if (typeof btnHeart !== 'undefined' && btnHeart) {
         const isLiked = likedSongs.some(s => s.src === song.src);
@@ -541,10 +538,15 @@ function renderSinglePlaylist(playlistData) {
         if (window.innerWidth <= 768) toggleSidebar(false);
     });
 
-    // Delete playlist
+
     const btnDelete = div.querySelector('.btn-delete-pl');
-    btnDelete.addEventListener('click', () => {
-        if(confirm(`Bạn có chắc muốn xóa playlist "${playlistData.name}"?`)) {
+    btnDelete.addEventListener('click', async () => {
+        const isAgreed = await CustomDialog.confirm(
+            `Bạn có chắc muốn xóa playlist "${playlistData.name}"?`,
+            "Xóa Playlist"
+        );
+
+        if (isAgreed) {
             myPlaylists = myPlaylists.filter(pl => pl.id !== playlistData.id);
             savePlaylistsToStorage();
             div.remove();
@@ -565,7 +567,7 @@ function addSongToPlaylist(playlistId, song) {
 
     const isExist = targetPl.songs.some(s => s.src === song.src);
     if (isExist) {
-        alert(`Bài hát "${song.title}" đã có trong playlist "${targetPl.name}" rồi!`);
+        CustomDialog.alert(`Bài hát "${song.title}" đã có trong playlist "${targetPl.name}" rồi!`);
         return;
     }
 
@@ -998,11 +1000,14 @@ btnShuffle.addEventListener('click', (e) => {
     e.currentTarget.classList.toggle('active-btn');
 });
 
+
 btnClosePlayer.addEventListener('click', () => {
     currentAudio.pause();
     currentAudio.currentTime = 0;
     isPlaying = false;
     playerBar.classList.add('hidden-bar');
+    playerBar.style.transform = ""; 
+    playerBar.style.opacity = "";
     const activeItem = document.querySelector('.song-item.active');
     if (activeItem) activeItem.classList.remove('active');
 });
@@ -1105,9 +1110,11 @@ if(btnAddPl) {
         if (!currentSong) return;
 
         if (myPlaylists.length === 0) {
-            alert('Bạn chưa tạo playlist nào! Hãy tạo playlist mới trong thư viện trước.');
-            toggleSidebar(true);
-            btnCreatePlaylist.click();
+            CustomDialog.alert('Bạn chưa tạo playlist nào! Hãy tạo playlist mới trong thư viện trước.')
+                .then(() => {
+                    toggleSidebar(true);
+                    if(btnCreatePlaylist) btnCreatePlaylist.click();
+                });
             return;
         }
 
@@ -1140,3 +1147,64 @@ window.addEventListener('popstate', (event) => {
         switchToView('home'); 
     }
 });
+
+/* NOTIFICATION SYSTEM */
+const CustomDialog = {
+    overlay: document.getElementById('custom-dialog'),
+    title: document.getElementById('dialog-title'),
+    message: document.getElementById('dialog-message'),
+    icon: document.getElementById('dialog-icon'),
+    btnConfirm: document.getElementById('btn-dialog-confirm'),
+    btnCancel: document.getElementById('btn-dialog-cancel'),
+    content: document.querySelector('#custom-dialog .dialog-content'),
+
+    alert: function(msg, title = "Thông báo") {
+        return new Promise((resolve) => {
+            this.setupUI(title, msg, 'alert');
+            
+            this.btnConfirm.onclick = () => {
+                this.close();
+                resolve(true);
+            };
+        });
+    },
+
+    confirm: function(msg, title = "Xác nhận") {
+        return new Promise((resolve) => {
+            this.setupUI(title, msg, 'confirm');
+
+            this.btnConfirm.onclick = () => {
+                this.close();
+                resolve(true); 
+            };
+
+            this.btnCancel.onclick = () => {
+                this.close();
+                resolve(false); 
+            };
+        });
+    },
+
+    setupUI: function(title, msg, type) {
+        this.title.innerText = title;
+        this.message.innerText = msg;
+        this.overlay.classList.remove('hidden');
+
+        this.content.classList.remove('alert-mode');
+        this.icon.className = 'dialog-icon';
+        this.icon.innerHTML = '<i class="fas fa-info-circle"></i>';
+        this.btnConfirm.style.background = 'var(--accent-color)';
+
+        if (type === 'alert') {
+            this.content.classList.add('alert-mode');
+        } else {
+            this.icon.classList.add('danger');
+            this.icon.innerHTML = '<i class="fas fa-question-circle"></i>';
+            this.btnConfirm.style.background = 'var(--danger-color)';
+        }
+    },
+
+    close: function() {
+        this.overlay.classList.add('hidden');
+    }
+};

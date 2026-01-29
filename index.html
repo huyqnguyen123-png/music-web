@@ -168,6 +168,21 @@
         </div>
     </div>
 
+    <div id="custom-dialog" class="modal-overlay hidden" style="z-index: 99999;">
+        <div class="modal-content dialog-content" style="width: 320px; text-align: center; padding: 20px;">
+            <div class="dialog-icon" id="dialog-icon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <h3 id="dialog-title" style="margin: 10px 0; font-size: 1.1rem;">Thông báo</h3>
+            <p id="dialog-message" style="color: #666; margin-bottom: 20px; font-size: 0.9rem;">Nội dung thông báo...</p>
+        
+            <div class="dialog-actions" style="display: flex; gap: 10px; justify-content: center;">
+                <button id="btn-dialog-cancel" class="btn-text" style="border: 1px solid #ddd; color: #666;">Hủy</button>
+                <button id="btn-dialog-confirm" class="main-play-btn" style="width: auto; height: 36px; border: 1px solid black; padding: 0 20px; border-radius: 18px; font-size: 0.9rem;">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
