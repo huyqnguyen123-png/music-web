@@ -1090,3 +1090,62 @@ if(playlistModal) {
         if (e.target === playlistModal) closeModal();
     });
 }
+
+/* THÊM TÍNH NĂNG VUỐT ĐỂ QUAY LẠI  */
+document.addEventListener('DOMContentLoaded', () => {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    // Chỉ nhận diện vuốt khi bắt đầu từ mép màn hình
+    const EDGE_THRESHOLD = 50;
+
+    const searchView = document.getElementById('search-view');
+
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, {passive: true});
+
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipeGesture();
+    }, {passive: true});
+
+    function handleSwipeGesture() {
+        if (!searchView || searchView.classList.contains('hidden')) return;
+
+        const xDiff = touchEndX - touchStartX;
+        const yDiff = touchEndY - touchStartY;
+
+        if (Math.abs(xDiff) > Math.abs(yDiff)) {      
+            if (Math.abs(xDiff) > 80) {
+                if (xDiff > 0 && touchStartX < EDGE_THRESHOLD) { 
+                    console.log("Phát hiện thao tác vuốt quay lại");
+                    goBackTrigger(); 
+                }
+            }
+        }
+    }
+
+    function goBackTrigger() {
+        const backBtn = document.querySelector('.search-header .btn-text'); 
+        const backBtnIcon = document.getElementById('btn-close-search');
+        
+        if (backBtn) {
+            backBtn.click();
+            if(searchView) {
+                searchView.style.transform = 'translateX(100%)';
+                searchView.style.transition = 'transform 0.3s ease';
+                setTimeout(() => {
+                    searchView.style.transform = ''; 
+                    searchView.style.transition = '';
+                }, 300);
+            }
+        } else if (backBtnIcon) {
+            backBtnIcon.click();
+        }
+    }
+});
