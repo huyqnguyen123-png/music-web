@@ -777,10 +777,9 @@ async function openArtistDetail(artistName) {
     }
 }
 
-/* LOGIC MỞ THỂ LOẠI / MOOD */
+/* OPEN GENRE/ MOOD */
 async function openGenreDetail(name, type) {
     switchToView('search');
-
     if(searchHeaderTitle) {
         searchHeaderTitle.innerHTML = `
             <span style="font-size: 0.8em; color: #666; display:block; margin-bottom:5px; text-transform: uppercase;">${type}</span>
@@ -792,27 +791,40 @@ async function openGenreDetail(name, type) {
         songListEl.innerHTML = `
             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:50px 0; color:#888;">
                 <div class="loading-wave">
-                    <div class="loading-bar"></div>
-                    <div class="loading-bar"></div>
-                    <div class="loading-bar"></div>
-                    <div class="loading-bar"></div>
+                    <div class="loading-bar"></div><div class="loading-bar"></div>
+                    <div class="loading-bar"></div><div class="loading-bar"></div>
                 </div>
-                <p style="margin-top:15px; font-size:0.9rem;">Đang tuyển chọn nhạc ${name}...</p>
+                <p style="margin-top:15px; font-size:0.9rem;">Đang tìm nhạc ${name}...</p>
             </div>
         `;
     }
 
     searchResults = [];
-    const query = `${name} music`;
+    const query = `${name} music`; 
 
     try {
-        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=50`);
+        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=200&_t=${Date.now()}`);
         const data = await res.json();
 
-        const genreSongs = data.results.map(item => ({
+        if (!data || !data.results) throw new Error("Dữ liệu trống");
+
+        let cleanList = data.results.filter(item => item.previewUrl);
+        for (let i = cleanList.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [cleanList[i], cleanList[j]] = [cleanList[j], cleanList[i]];
+        }
+
+        const randomSelection = cleanList.slice(0, 40);
+
+        if (randomSelection.length === 0) {
+            songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Không tìm thấy bài hát nào.</p>`;
+            return;
+        }
+
+        const genreSongs = randomSelection.map(item => ({
             title: item.trackName,
             artist: item.artistName,
-            img: item.artworkUrl100.replace('100x100bb', '600x600bb'),
+            img: (item.artworkUrl100 || "").replace('100x100bb', '600x600bb'),
             src: item.previewUrl
         }));
 
@@ -821,7 +833,11 @@ async function openGenreDetail(name, type) {
 
     } catch (error) {
         console.error("Lỗi tải thể loại:", error);
-        if(songListEl) songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Không tìm thấy bài hát nào.</p>`;
+        if(songListEl) songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Lỗi kết nối.</p>`;
+        
+        if(typeof CustomDialog !== 'undefined') {
+            CustomDialog.alert("Không thể tải danh sách nhạc.", "Lỗi");
+        }
     }
 }
 
