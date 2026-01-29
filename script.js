@@ -395,34 +395,40 @@ window.selectSuggestion = function(value) {
 function loadAndPlay(index) {
     currentIndex = index;
     const song = playlist[currentIndex];
-
-    // UI Updates
-    document.getElementById('p-img').src = song.img;
-    document.getElementById('p-title').innerText = song.title;
-    document.getElementById('p-artist').innerText = song.artist;
-
-    playerBar.classList.remove('hidden-bar');
-    playerBar.classList.add('playing');
+    const pImg = document.getElementById('p-img');
+    const pTitle = document.getElementById('p-title');
+    const pArtist = document.getElementById('p-artist');
     
-    // Audio Logic
+    if (pImg) pImg.src = song.img;
+    if (pTitle) pTitle.innerText = song.title;
+    if (pArtist) pArtist.innerText = song.artist;
+
+    const playerBar = document.getElementById('player-bar');
+    if (playerBar) {
+        playerBar.classList.remove('hidden-bar');
+        playerBar.classList.remove('collapsed');
+        playerBar.classList.add('playing');
+        playerBar.style.transform = "translateY(0)";
+        playerBar.style.opacity = "1";
+        playerBar.style.display = "flex"; 
+    }
+
     currentAudio.src = song.src;
-    currentAudio.play();
+    currentAudio.play().catch(e => console.error("Lỗi phát nhạc:", e));
     isPlaying = true;
     updatePlayButton();
 
-    // Re-render list to show active state
-    if (isViewingLiked) {
+    if (typeof isViewingLiked !== 'undefined' && isViewingLiked) {
         renderSongList(likedSongs);
-    } else {
-        if (typeof searchResults !== 'undefined') {
-            renderSongList(searchResults);
-        }
+    } else if (typeof searchResults !== 'undefined') {
+        renderSongList(searchResults);
     }
 
-    // Check Liked Status
-    const isLiked = likedSongs.some(s => s.src === song.src);
-    if (isLiked) btnHeart.classList.add('active');
-    else btnHeart.classList.remove('active');
+    if (typeof btnHeart !== 'undefined' && btnHeart) {
+        const isLiked = likedSongs.some(s => s.src === song.src);
+        if (isLiked) btnHeart.classList.add('active');
+        else btnHeart.classList.remove('active');
+    }
 }
 
 function updatePlayButton() {
@@ -451,6 +457,27 @@ function updateVolumeIcon(val) {
         icon.className = 'fas fa-volume-up';
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const dragHandle = document.getElementById('player-drag-handle');
+    const playerBar = document.getElementById('player-bar');
+
+    if (dragHandle && playerBar) {
+        dragHandle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            const isCollapsed = playerBar.classList.contains('collapsed');
+            
+            if (isCollapsed) {
+                playerBar.classList.remove('collapsed');
+                playerBar.style.transform = "translateY(0)"; 
+            } else {
+                playerBar.classList.add('collapsed');
+                playerBar.style.transform = "translateY(calc(100% - 30px))"; 
+            }
+        });
+    }
+});
 
 
 /* PLAYLIST & LIBRARY LOGIC */
