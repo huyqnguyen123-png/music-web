@@ -60,11 +60,14 @@ body {
   overflow-y: auto;  
   height: auto;     
   transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overscroll-behavior-x: none;
+  touch-action: pan-y;
 }
 
 body {
   scrollbar-width: thin; 
-  scrollbar-color: #ccc transparent; 
+  scrollbar-color: #ccc transparent;
+  overscroll-behavior-x: none; 
 }
 
 /* Body State when Sidebar is open */

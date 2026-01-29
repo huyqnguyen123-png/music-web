@@ -186,13 +186,21 @@ function switchToView(viewName, titleText = '') {
         if(mainContent) mainContent.classList.remove('hidden');
         if(searchView) searchView.classList.add('hidden');
         isViewingLiked = false;
+        
+        document.title = "Music App"; 
     } else {
         if(homeView) homeView.classList.add('hidden');
         if(mainContent) mainContent.classList.add('hidden');
         if(searchView) searchView.classList.remove('hidden');
         if(searchHeaderTitle) searchHeaderTitle.innerText = titleText;
+        
         if (viewName === 'liked') isViewingLiked = true;
         else isViewingLiked = false;
+
+        if (!history.state || history.state.view !== viewName) {
+            history.pushState({ view: viewName }, "", `#${viewName}`);
+            document.title = titleText || "Chi tiết"; 
+        }
     }
 }
 
@@ -795,7 +803,7 @@ if(libraryTitleBtn) libraryTitleBtn.addEventListener('click', () => toggleSideba
 
 if(btnBackHome) {
     btnBackHome.addEventListener('click', () => {
-        switchToView('home');
+        history.back(); 
     });
 }
 
@@ -1091,61 +1099,17 @@ if(playlistModal) {
     });
 }
 
-/* THÊM TÍNH NĂNG VUỐT ĐỂ QUAY LẠI  */
-document.addEventListener('DOMContentLoaded', () => {
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchEndX = 0;
-    let touchEndY = 0;
-
-    // Chỉ nhận diện vuốt khi bắt đầu từ mép màn hình
-    const EDGE_THRESHOLD = 50;
-
-    const searchView = document.getElementById('search-view');
-
-    document.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-    }, {passive: true});
-
-    document.addEventListener('touchend', e => {
-        touchEndX = e.changedTouches[0].screenX;
-        touchEndY = e.changedTouches[0].screenY;
-        handleSwipeGesture();
-    }, {passive: true});
-
-    function handleSwipeGesture() {
-        if (!searchView || searchView.classList.contains('hidden')) return;
-
-        const xDiff = touchEndX - touchStartX;
-        const yDiff = touchEndY - touchStartY;
-
-        if (Math.abs(xDiff) > Math.abs(yDiff)) {      
-            if (Math.abs(xDiff) > 80) {
-                if (xDiff > 0 && touchStartX < EDGE_THRESHOLD) { 
-                    console.log("Phát hiện thao tác vuốt quay lại");
-                    goBackTrigger(); 
-                }
-            }
-        }
-    }
-
-    function goBackTrigger() {
-        const backBtn = document.querySelector('.search-header .btn-text'); 
-        const backBtnIcon = document.getElementById('btn-close-search');
+/* SLIDE TO GO BACK FEATURE */
+window.addEventListener('popstate', (event) => {
+    if (!event.state || event.state.view === 'home') {
+        if(homeView) homeView.classList.remove('hidden');
+        if(mainContent) mainContent.classList.remove('hidden');
+        if(searchView) searchView.classList.add('hidden');
         
-        if (backBtn) {
-            backBtn.click();
-            if(searchView) {
-                searchView.style.transform = 'translateX(100%)';
-                searchView.style.transition = 'transform 0.3s ease';
-                setTimeout(() => {
-                    searchView.style.transform = ''; 
-                    searchView.style.transition = '';
-                }, 300);
-            }
-        } else if (backBtnIcon) {
-            backBtnIcon.click();
-        }
+        document.title = "Music App";
+
+        if (document.activeElement) document.activeElement.blur();
+    } else {
+        switchToView('home'); 
     }
 });
