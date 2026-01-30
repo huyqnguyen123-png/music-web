@@ -59,6 +59,7 @@ let isShuffle = false;
 let isViewingLiked = false;
 let searchTimeout; 
 let currentFocus = -1;
+let currentGenreRegion = 'all'; 
 
 
 /*  DOM ELEMENTS */
@@ -780,64 +781,177 @@ async function openArtistDetail(artistName) {
 /* OPEN GENRE/ MOOD */
 async function openGenreDetail(name, type) {
     switchToView('search');
-    if(searchHeaderTitle) {
-        searchHeaderTitle.innerHTML = `
-            <span style="font-size: 0.8em; color: #666; display:block; margin-bottom:5px; text-transform: uppercase;">${type}</span>
-            ${name}
-        `;
+    currentGenreRegion = 'all';
+    const isMood = type.includes('Mood'); 
+    let filterHTML = '';
+    if (!isMood) {
+        filterHTML = `<div class="genre-filter-container" id="genre-filters"></div>`;
     }
 
+    if(searchHeaderTitle) {
+        searchHeaderTitle.innerHTML = `
+            <div style="display: flex; flex-direction: column; width: 100%; overflow: hidden;">
+                <div style="padding-right: 20px;">
+                    <span style="font-size: 0.8em; color: #888; display:block; margin-bottom:4px; text-transform: uppercase; letter-spacing: 1px; line-height: 1.5;">${type}</span>
+                    <span style="font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; line-height: 1.2;">${name}</span>
+                </div>
+                ${filterHTML}
+            </div>
+        `;
+    }
+    if (!isMood) {
+        const filters = [
+            { id: 'all', label: 'Quốc tế' },    
+            { id: 'us-uk', label: 'US-UK' },
+            { id: 'v-pop', label: 'Việt Nam' }, 
+            { id: 'k-pop', label: 'Hàn Quốc' }, 
+            { id: 'j-pop', label: 'Nhật Bản' },
+            { id: 'ghost', label: '        ' },
+            { id: 'ghost', label: '        ' },
+            { id: 'ghost', label: '        ' },
+            { id: 'ghost', label: '        ' }
+        ];
+
+        const filterContainer = document.getElementById('genre-filters');
+    if(filterContainer) {
+        filters.forEach(filter => {
+            const btn = document.createElement('button');
+            
+            if (filter.id === 'ghost') {
+                btn.className = 'filter-chip-ghost'; 
+                btn.disabled = true; 
+            } else {
+                btn.className = `filter-chip-btn ${filter.id === 'all' ? 'active' : ''}`;
+                btn.innerText = filter.label;
+                
+                btn.onclick = (e) => {
+                    document.querySelectorAll('.filter-chip-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    currentGenreRegion = filter.id;
+                    fetchGenreData(name, filter.id, false);
+                };
+            }            
+            filterContainer.appendChild(btn);
+        });
+    }
+        fetchGenreData(name, 'all', false);
+    } else {
+        fetchGenreData(name, 'all', true); 
+    }
+}
+
+async function fetchGenreData(genreName, region, isMood) {
     if(songListEl) {
+        const msg = isMood ? `Đang pha chế mood ${genreName}...` : `Đang tìm kiếm Top50 ${genreName}...`;
         songListEl.innerHTML = `
-            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:50px 0; color:#888;">
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 0; color:#888;">
                 <div class="loading-wave">
                     <div class="loading-bar"></div><div class="loading-bar"></div>
                     <div class="loading-bar"></div><div class="loading-bar"></div>
                 </div>
-                <p style="margin-top:15px; font-size:0.9rem;">Đang tìm nhạc ${name}...</p>
+                <p style="margin-top:15px; font-size:0.9rem;">${msg}</p>
             </div>
         `;
     }
 
     searchResults = [];
-    const query = `${name} music`; 
+    let apiUrl = '';
+
+    if (isMood) {
+        const query = `${genreName} music`; 
+        apiUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=150`;
+    } else {
+        let countryCode = 'US';
+        let searchTerm = genreName; 
+
+        switch (region) {
+            case 'v-pop':
+                countryCode = 'VN'; 
+                if (genreName.toLowerCase() === 'indie') {
+                    searchTerm = 'Indie Việt Nam'; 
+                } else if (genreName.toLowerCase().includes('pop')) {
+                    searchTerm = 'V-Pop'; 
+                } else if (genreName.toLowerCase().includes('HipHop')) {
+                    searchTerm = 'Hiphop Hots 100 Việt Nam';
+                } else {
+                    searchTerm = `${genreName} Việt Nam`; 
+                }
+                break;
+
+            case 'k-pop':
+                countryCode = 'KR';
+                if (genreName.toLowerCase() === 'indie') {
+                    searchTerm = 'K-Indie'; 
+                } else {
+                    searchTerm = 'K-Pop';
+                }
+                break;
+
+            case 'j-pop':
+                countryCode = 'JP';
+                searchTerm = 'J-Pop';
+                break;
+
+            case 'us-uk':
+                countryCode = 'US';
+                searchTerm = `${genreName}`; 
+                break;
+
+            default: 
+                countryCode = 'US';
+                searchTerm = `${genreName} hits`;
+                break;
+        }
+        apiUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&country=${countryCode}&media=music&entity=song&limit=100`;
+    }
 
     try {
-        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=200&_t=${Date.now()}`);
+        const res = await fetch(apiUrl + `&_t=${Date.now()}`);
         const data = await res.json();
 
         if (!data || !data.results) throw new Error("Dữ liệu trống");
 
         let cleanList = data.results.filter(item => item.previewUrl);
-        for (let i = cleanList.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [cleanList[i], cleanList[j]] = [cleanList[j], cleanList[i]];
+
+        if (isMood) {
+            for (let i = cleanList.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cleanList[i], cleanList[j]] = [cleanList[j], cleanList[i]];
+            }
+            cleanList = cleanList.slice(0, 50); 
+        } else {
+            cleanList.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
+            const unique = [];
+            const seen = new Set();
+            cleanList.forEach(item => {
+                const key = (item.trackName + item.artistName).toLowerCase().replace(/[^a-z0-9]/g, "");
+                if(!seen.has(key)) {
+                    seen.add(key);
+                    unique.push(item);
+                }
+            });
+            cleanList = unique.slice(0, 50); 
         }
 
-        const randomSelection = cleanList.slice(0, 40);
-
-        if (randomSelection.length === 0) {
-            songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Không tìm thấy bài hát nào.</p>`;
+        if (cleanList.length === 0) {
+            songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Không tìm thấy bài hát phù hợp.</p>`;
             return;
         }
 
-        const genreSongs = randomSelection.map(item => ({
+        const finalSongs = cleanList.map(item => ({
             title: item.trackName,
             artist: item.artistName,
             img: (item.artworkUrl100 || "").replace('100x100bb', '600x600bb'),
             src: item.previewUrl
         }));
 
-        searchResults = genreSongs;
-        renderSongList(genreSongs);
+        searchResults = finalSongs;
+        renderSongList(finalSongs);
 
     } catch (error) {
-        console.error("Lỗi tải thể loại:", error);
-        if(songListEl) songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Lỗi kết nối.</p>`;
-        
-        if(typeof CustomDialog !== 'undefined') {
-            CustomDialog.alert("Không thể tải danh sách nhạc.", "Lỗi");
-        }
+        console.error("Lỗi:", error);
+        if(songListEl) songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Lỗi kết nối hoặc không tải được dữ liệu.</p>`;
     }
 }
 
