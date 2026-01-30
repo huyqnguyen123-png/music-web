@@ -7,12 +7,12 @@
     <meta property="og:type" content="website"> 
     <meta property="og:url" content="https://www.musicpro.com">
     <meta property="og:description" content="An online music streaming website">
-    <meta property="og:image" content="logo.png">
+    <meta property="og:image" content="assets/img/logo.png">
     <title>MusicPro</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="/logo2.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/logo2.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/img/logo2.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/img/logo2.png">
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -21,7 +21,7 @@
     <header class="main-header">
         <div class="header-left">
             <div class="logo">
-                <img src="logo.png" alt="MusicPro Logo" class="logo-img">
+                <img src="assets/img/logo.png" alt="MusicPro Logo" class="logo-img">
             <h1>MusicPro</h1>
         </div>
 
@@ -31,6 +31,17 @@
             <input type="text" id="search-input" placeholder="Tìm kiếm bài hát, nghệ sĩ..." autocomplete="off">
             <button id="btn-search-trigger"><i class="fas fa-arrow-right"></i></button>
             <div id="search-suggestions" class="suggestions-box hidden"></div>
+        </div>
+
+        <div class="header-user-section">
+            <a href="login.html" class="user-icon-btn" title="Đăng nhập"><i class="fas fa-user"></i></a>
+        </div>
+
+        <div class="header-user-section">
+            <button id="btn-user-icon" class="user-icon-btn"><i class="fas fa-user"></i></button>
+            <div id="user-dropdown" class="user-dropdown hidden">
+                <a href="login.html" class="dropdown-item"><i class="fas fa-sign-in-alt"></i> Đăng nhập </a>
+            </div>
         </div>
     </header>
 
@@ -183,6 +194,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="assets/js/script.js"></script>
 </body>
 </html>

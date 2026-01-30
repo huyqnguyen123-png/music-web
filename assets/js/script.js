@@ -1338,3 +1338,20 @@ const CustomDialog = {
         this.overlay.classList.add('hidden');
     }
 };
+
+/* DROPDOWN MENU */
+const btnUserIcon = document.getElementById('btn-user-icon');
+const userDropdown = document.getElementById('user-dropdown');
+
+if(btnUserIcon) {
+    btnUserIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        userDropdown.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!userDropdown.contains(e.target) && !btnUserIcon.contains(e.target)) {
+            userDropdown.classList.add('hidden');
+        }
+    });
+}
