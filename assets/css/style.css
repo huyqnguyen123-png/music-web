@@ -1370,6 +1370,15 @@ body.sidebar-is-open .floating-menu-btn {
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
+#btn-dialog-confirm {
+  width: auto; 
+  height: 36px; 
+  border: 1px solid black; 
+  padding: 0 20px; 
+  border-radius: 18px; 
+  font-size: 0.9rem;
+}
+
 .main-play-btn {
   width: 45px;
   height: 45px;
@@ -2124,6 +2133,16 @@ button,
         height: 35px;
         font-size: 0.9rem;
     }
+
+    #btn-dialog-confirm {
+      font-size: 0.95rem !important; 
+      padding: 8px 20px !important;    
+      width: auto !important;
+      height: auto !important;
+      border-radius: 50px !important; 
+      line-height: normal !important;
+      margin-left: 10px; 
+    }
 }
 
 /* MOBILE STANDARD (Max 480px) */
@@ -2137,6 +2156,7 @@ button,
     padding: 6px 14px !important; 
     white-space: nowrap !important;
   }
+  
   .dialog-actions { gap: 8px !important; }
   
   :root {
