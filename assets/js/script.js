@@ -20,7 +20,7 @@ const moodData = [
 ];
 
 const genreData = [
-    { name: "Pop Ballad", img: "https://i.scdn.co/image/ab67616d0000b2735a6bc1ecf16bbac5734f23da" },
+    { name: "Pop", img: "https://i.scdn.co/image/ab67616d0000b2735a6bc1ecf16bbac5734f23da" },
     { name: "Hip-Hop", img: "https://i.scdn.co/image/ab67616d0000b2730ecdf596e76b0403506c1375" },
     { name: "Indie", img: "https://photo.znews.vn/w660/Uploaded/unvjuas/2021_11_15/COVERART_VU_BQN.jpg" },
     { name: "R&B", img: "https://i.scdn.co/image/ab6761610000e5ebc7688aad1bf03986934d7e26" }
@@ -49,11 +49,8 @@ const artistData = [
 let currentAudio = new Audio();
 let playlist = [];
 let searchResults = [];
-
-// --- SỬA ĐỔI QUAN TRỌNG: Không load trực tiếp từ LocalStorage nữa ---
 let myPlaylists = [];
 let likedSongs = [];
-// -------------------------------------------------------------------
 
 let activeIndex = 1;
 let currentIndex = 0;
@@ -125,23 +122,15 @@ const closeModalBtn = document.getElementById('close-modal-btn');
 // Init rendering
 renderCoverflow();
 renderStaticGrids();
-
-// --- SỬA ĐỔI: Load Data từ Backend ---
 initUserData();
 
 async function initUserData() {
-    // Gọi Backend để lấy dữ liệu đúng của User hiện tại
     const data = await MockBackend.getUserData(); 
-    
-    // Cập nhật biến toàn cục
     myPlaylists = data.playlists || [];
     likedSongs = data.favorites || [];
-
-    // Render lại giao diện
     loadUserPlaylists(); 
     if (likedCountEl) likedCountEl.innerText = `Playlist • ${likedSongs.length} songs`;
 }
-// -------------------------------------
 
 // Auto-open sidebar on large screens
 window.addEventListener('DOMContentLoaded', () => {
@@ -510,7 +499,6 @@ function toggleSidebar(forceState = null) {
 }
 
 function addNewPlaylist(name) {
-    // Kiểm tra đăng nhập
     if (!MockBackend.getCurrentUser()) {
         CustomDialog.alert("Please login to create playlists!");
         return;
@@ -518,10 +506,8 @@ function addNewPlaylist(name) {
 
     const newPl = { id: Date.now(), name: name, songs: [] };
     myPlaylists.push(newPl);
-    
-    // --- SỬA ĐỔI: Lưu vào Backend ---
+
     saveUserData(); 
-    // --------------------------------
     
     renderSinglePlaylist(newPl);
 }
@@ -531,9 +517,8 @@ function saveUserData() {
 }
 
 function loadUserPlaylists() {
-    // Xóa danh sách cũ trên giao diện
     const container = document.getElementById('my-playlists'); 
-    if (container) container.innerHTML = ''; // Clear container
+    if (container) container.innerHTML = '';
 
     [...myPlaylists].reverse().forEach(pl => {
         renderSinglePlaylist(pl);
@@ -541,9 +526,8 @@ function loadUserPlaylists() {
 }
 
 function renderSinglePlaylist(playlistData) {
-    // Tìm đúng container để append
     const container = document.getElementById('my-playlists');
-    if (!container) return; // Nếu không tìm thấy sidebar list thì dừng
+    if (!container) return;
 
     const li = document.createElement('li');
     li.className = 'lib-item';
@@ -582,7 +566,7 @@ function renderSinglePlaylist(playlistData) {
 
         if (isAgreed) {
             myPlaylists = myPlaylists.filter(pl => pl.id !== playlistData.id);
-            saveUserData(); // Lưu lại vào backend
+            saveUserData();
             li.remove();
         }
     });
@@ -601,9 +585,8 @@ function addSongToPlaylist(playlistId, song) {
     }
 
     targetPl.songs.push(song);
-    saveUserData(); // Lưu backend
-    
-    // Update sidebar text
+    saveUserData(); 
+
     const sidebarItem = document.querySelector(`.lib-item[data-id="${playlistId}"] p`);
     if(sidebarItem) {
         sidebarItem.innerText = `${targetPl.songs.length} songs • Yours`;
@@ -831,8 +814,8 @@ async function openGenreDetail(name, type) {
             { id: 'all', label: 'Global' },    
             { id: 'us-uk', label: 'US-UK' },
             { id: 'v-pop', label: 'Vietnam' }, 
-            { id: 'k-pop', label: 'K-Pop' }, 
-            { id: 'j-pop', label: 'J-Pop' },
+            { id: 'k-pop', label: 'Korea' }, 
+            { id: 'j-pop', label: 'Japan' },
             { id: 'ghost', label: '        ' },
             { id: 'ghost', label: '        ' },
             { id: 'ghost', label: '        ' },
@@ -870,7 +853,7 @@ async function openGenreDetail(name, type) {
 
 async function fetchGenreData(genreName, region, isMood) {
     if(songListEl) {
-        const msg = isMood ? `Mixing mood ${genreName}...` : `Searching Top 50 ${genreName}...`;
+        const msg = isMood ? `Mixing mood ${genreName}...` : `Searching Top 100 ${region.toUpperCase()}...`;
         songListEl.innerHTML = `
             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 0; color:#888;">
                 <div class="loading-wave">
@@ -884,6 +867,9 @@ async function fetchGenreData(genreName, region, isMood) {
 
     searchResults = [];
     let apiUrl = '';
+    const cleanGenre = genreName.toLowerCase();
+
+    const asianCharsRegex = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\u3131-\uD79D]/;
 
     if (isMood) {
         const query = `${genreName} music`; 
@@ -895,42 +881,70 @@ async function fetchGenreData(genreName, region, isMood) {
         switch (region) {
             case 'v-pop':
                 countryCode = 'VN'; 
-                if (genreName.toLowerCase() === 'indie') {
-                    searchTerm = 'Indie Vietnam'; 
-                } else if (genreName.toLowerCase().includes('pop')) {
-                    searchTerm = 'V-Pop'; 
-                } else if (genreName.toLowerCase().includes('HipHop')) {
-                    searchTerm = 'Hiphop Hots 100 Vietnam';
+                if (cleanGenre === 'indie') {
+                    searchTerm = 'Indie Việt Nam Hot 100'; 
+                } else if (cleanGenre.includes('pop')) {
+                    searchTerm = 'V-Pop Việt Hot 100'; 
+                } else if (cleanGenre.includes('hiphop')) {
+                    searchTerm = 'Hiphop Việt Hot 100 ';
                 } else {
-                    searchTerm = `${genreName} Vietnam`; 
+                    searchTerm = `${genreName} Việt`; 
                 }
                 break;
 
             case 'k-pop':
                 countryCode = 'KR';
-                if (genreName.toLowerCase() === 'indie') {
-                    searchTerm = 'K-Indie'; 
+                if (cleanGenre === 'indie') {
+                    searchTerm = 'Indie Korea Hot 100'; 
+                } else if (cleanGenre.includes('pop')) {
+                    searchTerm = 'K-Pop Hot 100'; 
+                } else if (cleanGenre.includes('hiphop')) {
+                    searchTerm = 'Hiphop Korea Hot 100';
                 } else {
-                    searchTerm = 'K-Pop';
+                    searchTerm = `${genreName} Korea Hot 100`; 
                 }
                 break;
 
             case 'j-pop':
                 countryCode = 'JP';
-                searchTerm = 'J-Pop';
+                if (cleanGenre === 'indie') {
+                    searchTerm = 'Indie Japan Hot 100'; 
+                } else if (cleanGenre.includes('pop')) {
+                    searchTerm = 'J-Pop Hot 100'; 
+                } else if (cleanGenre.includes('hiphop')) {
+                    searchTerm = 'Hiphop Japan Hot 100';
+                } else {
+                    searchTerm = `${genreName} Korea Hot 100`; 
+                }
                 break;
 
             case 'us-uk':
                 countryCode = 'US';
-                searchTerm = `${genreName}`; 
+                if (cleanGenre === 'indie') {
+                    searchTerm = 'Indie US Hot 100'; 
+                } else if (cleanGenre.includes('pop')) {
+                    searchTerm = 'US-UK Pop Hot 100'; 
+                } else if (cleanGenre.includes('hiphop')) {
+                    searchTerm = 'Hiphop US-UK Hot 100';
+                } else {
+                    searchTerm = `${genreName} US-UK Hots 100`; 
+                }
                 break;
 
-            default: 
+            default:
                 countryCode = 'US';
-                searchTerm = `${genreName} hits`;
+                if (cleanGenre === 'indie') {
+                    searchTerm = 'Indie World Hot 100'; 
+                } else if (cleanGenre.includes('pop')) {
+                    searchTerm = 'Pop World Hot 100'; 
+                } else if (cleanGenre.includes('hiphop')) {
+                    searchTerm = 'Hiphop World Hot 100';
+                } else {
+                    searchTerm = `${genreName} World Hot 100`; 
+                }
                 break;
         }
-        apiUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&country=${countryCode}&media=music&entity=song&limit=100`;
+        apiUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&country=${countryCode}&media=music&entity=song&limit=150`;
     }
 
     try {
@@ -939,7 +953,22 @@ async function fetchGenreData(genreName, region, isMood) {
 
         if (!data || !data.results) throw new Error("Empty Data");
 
-        let cleanList = data.results.filter(item => item.previewUrl);
+        let cleanList = data.results.filter(item => {
+            if (!item.previewUrl) return false;
+
+            if (region === 'us-uk') {
+                if (asianCharsRegex.test(item.artistName) || asianCharsRegex.test(item.trackName)) {
+                    return false; 
+                }
+                if (item.trackName.toLowerCase().includes('despacito')) return false;
+            }
+
+            if (region === 'v-pop') {
+                if (asianCharsRegex.test(item.artistName)) return false; 
+            }
+
+            return true;
+        });
 
         if (isMood) {
             for (let i = cleanList.length - 1; i > 0; i--) {
@@ -962,7 +991,11 @@ async function fetchGenreData(genreName, region, isMood) {
         }
 
         if (cleanList.length === 0) {
-            songListEl.innerHTML = `<p style="text-align:center; padding:20px;">No suitable songs found.</p>`;
+            songListEl.innerHTML = `<div style="text-align:center; padding:30px; color:#666;">
+                <i class="fas fa-search" style="font-size:2rem; margin-bottom:10px; opacity:0.5;"></i>
+                <p>No songs found matching your filter.</p>
+                <button onclick="fetchGenreData('${genreName}', 'all', false)" class="btn-text" style="margin-top:10px; font-size:0.8rem;">Try Global Search</button>
+            </div>`;
             return;
         }
 
@@ -983,7 +1016,7 @@ async function fetchGenreData(genreName, region, isMood) {
 }
 
 /* EVENT LISTENERS */
-/* --- Navigation & Sidebar --- */
+/* Navigation & Sidebar */
 if(sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', () => toggleSidebar(true));
 if(libraryTitleBtn) libraryTitleBtn.addEventListener('click', () => toggleSidebar(false));
 
@@ -1001,7 +1034,7 @@ if(btnViewLiked) {
     });
 }
 
-/* --- Coverflow Controls --- */
+/* Coverflow Controls */
 document.getElementById('btn-prev').addEventListener('click', () => {
     activeIndex = (activeIndex - 1 + coverflowData.length) % coverflowData.length;
     updateCoverflow();
@@ -1012,7 +1045,7 @@ document.getElementById('btn-next').addEventListener('click', () => {
     updateCoverflow();
 });
 
-/* --- Search Events --- */
+/* Search Events */
 if (btnSearchTrigger) {
     btnSearchTrigger.addEventListener('click', () => {
         const icon = btnSearchTrigger.querySelector('i');
@@ -1127,7 +1160,7 @@ function removeActive(items) {
     }
 }
 
-/* --- Player Controls --- */
+/* Player Controls */
 btnPlay.addEventListener('click', () => {
     if (isPlaying) currentAudio.pause();
     else currentAudio.play();
@@ -1196,7 +1229,7 @@ progressBar.addEventListener('input', (e) => {
     e.target.style.background = `linear-gradient(to right, var(--accent-color) ${val}%, #e1e1e1 ${val}%)`;
 });
 
-/* --- Volume Controls --- */
+/* Volume Controls */
 if(volumeBtn) {
     volumeBtn.addEventListener('click', (e) => {
         e.stopPropagation(); 
@@ -1218,9 +1251,8 @@ if(volumeSlider) {
     });
 }
 
-/* --- Playlist Actions --- */
+/* Playlist Actions */
 btnCreatePlaylist.addEventListener('click', () => {
-    // Kiểm tra đăng nhập trước khi hiện ô nhập
     if (!MockBackend.getCurrentUser()) {
         CustomDialog.alert("Please login to create playlists!");
         return;
@@ -1247,9 +1279,8 @@ inputPlaylistName.addEventListener('keypress', (e) => {
     }
 });
 
-/* --- Heart / Liked Songs --- */
+/* Heart / Liked Songs */
 btnHeart.addEventListener('click', () => {
-    // Kiểm tra đăng nhập
     if (!MockBackend.getCurrentUser()) {
         CustomDialog.alert("Please login to like songs!");
         return;
@@ -1267,7 +1298,7 @@ btnHeart.addEventListener('click', () => {
         btnHeart.classList.remove('active');
     }
     
-    saveUserData(); // Lưu backend
+    saveUserData();
     if (likedCountEl) likedCountEl.innerText = `Playlist • ${likedSongs.length} songs`;
     if (isViewingLiked) renderSongList(likedSongs);
 });
@@ -1275,7 +1306,6 @@ btnHeart.addEventListener('click', () => {
 /* --- Add to Playlist Modal --- */
 if(btnAddPl) {
     btnAddPl.addEventListener('click', () => {
-        // Kiểm tra đăng nhập
         if (!MockBackend.getCurrentUser()) {
             CustomDialog.alert("Please login to add songs!");
             return;
