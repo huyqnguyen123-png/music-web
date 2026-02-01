@@ -76,9 +76,22 @@ music-web/
 │   └── js/
 │       ├── auth.js          # Auth logic, validation, tab switching
 │       ├── main.js          # Player logic, iTunes API handling
-│       └── mock-backend.js  # Fake Database / Server simulation
+│       ├── mock-backend.js  # Fake Database / Server simulation
+│       ├── profile.js       # Profile page logic & User settings
+│       └── script.js        # General UI scripts & Utilities
 ├── index.html               # Home Page (Music Player)
 ├── login.html               # Authentication Page (Login/Register)
 ├── profile.html             # User Profile Management
 └── README.md                # Project Documentation
+
+
+---
+
+## 👨‍💻 Author
+
+**Huy Nguyen**
+* Github: [@huyqnguyen123-png](https://github.com/huyqnguyen123-png)
+
+---
+Thanks for reading!
 
