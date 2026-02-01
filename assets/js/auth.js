@@ -518,4 +518,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dropdownContainer && !dropdownContainer.contains(e.target)) { closeDropdown(); }
         });
     }
+
+    /* CHECK URL PARAMETER TO SWITCH TABS */
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+
+    if (mode === 'signup') {
+        const registerTab = document.querySelector('.tab-btn[data-target="register-form"]');
+        if (registerTab) {
+            setTimeout(() => {
+                registerTab.click();
+            }, 100); 
+        }
+    }
 });

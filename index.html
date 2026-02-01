@@ -44,7 +44,7 @@
                     <a href="login.html" class="dropdown-item">
                         <i class="fas fa-sign-in-alt"></i> <span>Log in</span>
                     </a>
-                    <a href="login.html" class="dropdown-item">
+                    <a href="login.html?mode=signup" class="dropdown-item">
                         <i class="fas fa-user-plus"></i> <span>Sign up</span>
                     </a>
                 </div>
@@ -59,9 +59,9 @@
                     <a href="#" class="dropdown-item">
                         <i class="fas fa-user-circle"></i> <span>Profile</span>
                     </a>
-                    <a href="#" class="dropdown-item">
+                    <!--<a href="#" class="dropdown-item">
                         <i class="fas fa-cog"></i> <span>Settings</span>
-                    </a>
+                    </a> -->
                     <div class="divider"></div>
                     <a href="#" id="menu-btn-logout" class="dropdown-item danger">
                         <i class="fas fa-sign-out-alt"></i> <span>Log out</span>
@@ -173,7 +173,6 @@
             <div class="player-controls">
                 <button id="btn-heart" class="heart-btn" title="Like"><i class="fas fa-heart"></i></button>
                 <button id="btn-add-pl" class="add-pl-btn" title="Add to Playlist"><i class="fas fa-plus-circle"></i></button>
-            
                 <button id="btn-shuffle"><i class="fas fa-random"></i></button>
                 <button id="btn-prev-song"><i class="fas fa-step-backward"></i></button>
                 <button id="btn-play" class="main-play-btn"><i class="fas fa-play"></i></button>
@@ -213,7 +212,7 @@
             <p id="dialog-message" style="color: #666; margin-bottom: 20px; font-size: 0.9rem;">Message content...</p>
         
             <div class="dialog-actions" style="display: flex; gap: 10px; justify-content: center;">
-                <button id="btn-dialog-cancel" class="btn-text" style="border: 1px solid #ddd; color: #666;">Cancel</button>
+                <button id="btn-dialog-cancel" class="btn-text">Cancel</button>
                 <button id="btn-dialog-confirm" class="main-play-btn" style="width: auto; height: 36px; border: 1px solid black; padding: 0 20px; border-radius: 18px; font-size: 0.9rem;">Confirm</button>
             </div>
         </div>

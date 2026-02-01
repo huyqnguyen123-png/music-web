@@ -1,13 +1,14 @@
 /* SESSION CHECK & USER PROFILE LOGIC */
 document.addEventListener('DOMContentLoaded', async () => {
-    // SELECT DOM ELEMENTS
+    
+    // 1. SELECT DOM ELEMENTS
     const menuBtn = document.getElementById('user-menu-btn');
     const guestDropdown = document.getElementById('guest-dropdown');
     const userDropdown = document.getElementById('user-dropdown');
     const menuUserName = document.getElementById('menu-user-name');
     const btnLogout = document.getElementById('menu-btn-logout');
 
-    // CHECK LOGIN SESSION
+    // 2. CHECK LOGIN SESSION
     const currentUser = MockBackend.getCurrentUser();
 
     function closeAllDropdowns() {
@@ -18,10 +19,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (currentUser) {
         console.log("Session Active:", currentUser.email);
 
-        const avatarUrl = `https://ui-avatars.com/api/?name=${currentUser.firstName}+${currentUser.lastName}&background=random&color=fff&size=128`;
+        let avatarUrl = '';
+        if (currentUser.avatar) {
+            avatarUrl = currentUser.avatar; 
+        } else {
+            avatarUrl = `https://ui-avatars.com/api/?name=${currentUser.firstName}+${currentUser.lastName}&background=random&color=fff&size=128`;
+        }
+
         menuBtn.innerHTML = `<img src="${avatarUrl}" alt="Avatar">`;
         
         if(menuUserName) menuUserName.innerText = `${currentUser.firstName} ${currentUser.lastName}`;
+
+        const profileLink = userDropdown.querySelector('a .fa-user-circle')?.closest('a');
+        if (profileLink) {
+            profileLink.href = "profile.html"; 
+        }
 
         menuBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -39,6 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } else {
         console.log("Session Status: Guest");
+        
         menuBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             const isHidden = guestDropdown.classList.contains('hidden');

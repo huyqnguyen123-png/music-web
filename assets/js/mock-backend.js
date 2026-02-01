@@ -2,14 +2,17 @@ const DB_KEY = 'musicpro_users';
 const SESSION_KEY = 'musicpro_current_user'; 
 
 const MockBackend = {
+    // REGISTER
     register: async (newUser) => {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 const users = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
                 if (users.find(u => u.email === newUser.email)) {
-                    reject("This email is already in use!");
+                    reject("Email is already in use!");
                     return;
                 }
+
+                newUser.avatar = null; 
                 users.push(newUser);
                 localStorage.setItem(DB_KEY, JSON.stringify(users));
                 
@@ -21,6 +24,7 @@ const MockBackend = {
         });
     },
 
+    // LOGIN
     login: async (email, password) => {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
@@ -45,25 +49,41 @@ const MockBackend = {
         localStorage.removeItem(SESSION_KEY);
     },
 
+    // GET USER DATA
     getUserData: async () => {
         const currentUser = JSON.parse(localStorage.getItem(SESSION_KEY));
-        if (!currentUser) return { favorites: [], playlists: [] }; 
+        if (!currentUser) return { favorites: [], playlists: [] };
 
-        const dataKey = `musicpro_data_${currentUser.id}`; 
+        const dataKey = `musicpro_data_${currentUser.id}`;
         return JSON.parse(localStorage.getItem(dataKey)) || { favorites: [], playlists: [] };
     },
 
+    // UPDATE USER DATA
     updateUserData: async (favorites, playlists) => {
         const currentUser = JSON.parse(localStorage.getItem(SESSION_KEY));
         if (!currentUser) return;
 
         const dataKey = `musicpro_data_${currentUser.id}`;
-        const newData = {
-            favorites: favorites || [],
-            playlists: playlists || []
-        };
-        
+        const newData = { favorites: favorites || [], playlists: playlists || [] };
         localStorage.setItem(dataKey, JSON.stringify(newData));
-        console.log(`Data has been saved for User ID: ${currentUser.id}`);
+    },
+
+    // UPDATE PROFILE INFO 
+    updateUserProfile: async (updatedInfo) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                let users = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+                
+                const userIndex = users.findIndex(u => u.id === updatedInfo.id);
+                if (userIndex !== -1) {
+                    users[userIndex] = { ...users[userIndex], ...updatedInfo };
+                    localStorage.setItem(DB_KEY, JSON.stringify(users));
+                }
+
+                localStorage.setItem(SESSION_KEY, JSON.stringify(updatedInfo));
+
+                resolve({ message: "Profile updated successfully!", user: updatedInfo });
+            }, 800);
+        });
     }
 };

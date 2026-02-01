@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="MusicPro">
+    <meta property="og:type" content="website"> 
+    <meta property="og:url" content="https://www.musicpro.com">
+    <meta property="og:description" content="An online music streaming website">
+    <meta property="og:image" content="assets/img/logo.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/img/logo2.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/img/logo2.png">
+    <title>Edit Profile - MusicPro</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/login.css">
+    
+    <style>
+        .logo {
+            display: flex;
+            align-items: center;
+            user-select: none;
+             margin: 0;
+            padding: 0;
+            transform: translateX(-50px);
+            -webkit-user-select: none;
+            -moz-user-select: none;    
+            -ms-user-select: none;     
+            user-select: none;         
+        }
+
+        .logo-img {
+            height: 70px;
+            width: auto;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover .logo-img {
+            transform: rotate(-10deg) scale(1.1);
+        }
+
+        .logo h1 {
+            font-size: 1.6rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #059669 0%, #0284C7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+            line-height: 1;
+            margin: 0 !important;
+            padding: 0 !important;
+            position: relative;
+            top: 2px;
+            right: 35px;
+        }
+
+        .btn-text,
+        .btn-text:link,
+        .btn-text:visited,
+        .btn-text:active {
+            color: #000;
+            text-decoration: none;
+        }
+
+        .btn-text {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: 0.2s;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .btn-text:hover {
+            background: white;
+            border-color: #ddd;
+            color: var(--accent-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            box-shadow: 0 1px 2px black;
+        }
+
+        .submit-btn.btn-secondary {
+            width: 100%;
+            padding: 14px;
+            background: rgb(255, 255, 255);
+            color: var(--accent-color);
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            box-shadow: 1px 1px 2px rgb(170, 170, 170);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 1px 2px black;;
+            filter: brightness(1.1);
+            background-color: black;
+        }
+
+        .submit-btn.btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 1px solid #ddd;
+            filter: brightness(1.1);
+            background-color: #ff4757;
+            color: white;
+        }
+
+        .profile-container {
+            max-width: 800px;
+            margin: 100px auto 50px;
+            padding: 20px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.05);
+            padding: 40px;
+            overflow: hidden;
+        }
+
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .avatar-upload {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+        }
+
+        .avatar-preview {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        .avatar-edit-btn {
+            position: absolute;
+            bottom: -5px;
+            left: 90px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            color: white;
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .avatar-edit-btn:hover {
+            transform: scale(1.1);
+
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="auth-header">
+        <div class="logo">
+            <img src="assets/img/logo.png" alt="MusicPro Logo" class="logo-img">
+            <h1>MusicPro</h1>
+        </div>
+        <a href="index.html" class="back-home-btn">
+            <i class="fas fa-arrow-left"></i> <span>Back to Home</span>
+        </a>
+    </header>
+
+    <main class="profile-container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="avatar-upload">
+                    <img src="" id="profile-avatar-preview" class="avatar-preview" alt="Avatar">
+                    <label for="avatar-input" class="avatar-edit-btn" title="Change Avatar">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" id="avatar-input" accept="image/*" style="display: none;">
+                </div>
+                <h2 id="profile-fullname">User Name</h2>
+                <p style="color: #888;">Manage your personal information</p>
+            </div>
+
+            <form id="profile-form">
+                <div class="form-grid">
+                    <div class="form-group floating-group">
+                        <input type="text" id="p-firstname" required placeholder=" ">
+                        <label for="p-firstname">First Name</label>
+                    </div>
+                    <div class="form-group floating-group">
+                        <input type="text" id="p-lastname" required placeholder=" ">
+                        <label for="p-lastname">Last Name</label>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group floating-group">
+                        <input type="email" id="p-email" required placeholder=" " readonly style="background-color: #f9f9f9; cursor: not-allowed;">
+                        <label for="p-email">Email (Cannot be changed)</label>
+                    </div>
+                    <div class="form-group floating-group">
+                        <input type="tel" id="p-phone" placeholder=" ">
+                        <label for="p-phone">Phone Number</label>
+                    </div>
+                </div>
+
+                <div class="form-group floating-group">
+                    <input type="text" id="p-country" placeholder=" ">
+                    <label for="p-country">Country/Region</label>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="submit-btn">Save Changes</button>
+                    <button type="button" class="submit-btn btn-secondary" onclick="window.history.back()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="assets/js/mock-backend.js"></script>
+    <script src="assets/js/profile.js"></script>
+</body>
+</html>
