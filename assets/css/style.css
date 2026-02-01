@@ -1861,15 +1861,10 @@ button,
     display: none !important;
   }
 
-  .hero-section h2, 
-  .main-content h2,
-  h2.section-title { 
-    text-align: center !important;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    font-size: 2rem !important; 
-    line-height: 1.2;
+  h1 {
+    top: 90px;
+    font-size: 30px;
+    
   }
 
   .floating-menu-btn {
@@ -1931,7 +1926,7 @@ button,
 
   .carousel-wrapper {
     height: auto;
-    margin-top: 190px;
+    margin-top: 150px;
     margin-bottom: 180px; 
   }
 
