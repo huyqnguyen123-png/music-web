@@ -257,7 +257,8 @@ body {
 }
 
 .form-group {
-  margin-bottom: 20px;
+  position: relative;
+  margin-bottom: 25px;
 }
 
 .row-group {
@@ -322,8 +323,8 @@ body {
 
 .toggle-password {
   position: absolute;
-  right: 15px;
-  top: 50%;
+  right: 15px !important;
+  top: 28px !important; 
   transform: translateY(-50%);
   color: #999;
   cursor: pointer;
@@ -364,7 +365,6 @@ select {
   box-sizing: border-box;
 }
 
-
 /* COMPONENT: BUTTONS */
 .submit-btn {
   width: 100%;
@@ -377,13 +377,13 @@ select {
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 15px;
-  box-shadow: 0 1px 2px black;;
+  margin-top: 10px; 
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .submit-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 1px 2px black;;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
   filter: brightness(1.1);
   background-color: black;
 }

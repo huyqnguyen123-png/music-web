@@ -162,15 +162,17 @@ document.addEventListener('DOMContentLoaded', () => {
     /* SLIDING TAB, LOGIN, COUNTRY... */
     function moveHighlighter(targetBtn) {
         if (!highlighter || !targetBtn) return;
+        const gap = 5; 
         const width = targetBtn.offsetWidth;
         const left = targetBtn.offsetLeft;
-        highlighter.style.width = `${width}px`;
-        highlighter.style.transform = `translateX(${left}px)`;
+        highlighter.style.left = '0px';
+        highlighter.style.width = `${width - (gap * 2)}px`;
+        highlighter.style.transform = `translateX(${left + gap}px)`;
     }
     const activeBtn = document.querySelector('.tab-btn.active');
     if (activeBtn && highlighter) {
         moveHighlighter(activeBtn);
-        setTimeout(() => { highlighter.style.opacity = '1'; }, 100);
+        setTimeout(() => { highlighter.style.opacity = '1'; }, 200);
     }
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -182,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             btn.classList.add('active');
             const targetId = btn.getAttribute('data-target');
-            const targetForm = document.getElementById(targetId);
+            const targetForm = document.getElementById(targetId);           
             if (targetForm) {
                 targetForm.classList.add('active');
                 void targetForm.offsetWidth; 
