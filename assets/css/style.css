@@ -1861,6 +1861,17 @@ button,
     display: none !important;
   }
 
+  .hero-section h2, 
+  .main-content h2,
+  h2.section-title { 
+    text-align: center !important;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 2rem !important; 
+    line-height: 1.2;
+  }
+
   .floating-menu-btn {
     position: fixed !important;
     top: 15px !important;       
