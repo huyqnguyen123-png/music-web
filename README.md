@@ -83,8 +83,7 @@ music-web/
 ├── login.html               # Authentication Page (Login/Register)
 ├── profile.html             # User Profile Management
 └── README.md                # Project Documentation
-
-
+```
 ---
 
 ## 👨‍💻 Author
