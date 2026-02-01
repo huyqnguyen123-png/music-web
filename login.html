@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
-        <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:title" content="MusicPro">
     <meta property="og:type" content="website"> 
@@ -10,7 +10,7 @@
     <meta property="og:image" content="assets/img/logo.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/img/logo2.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/img/logo2.png">
-    <title>Đăng nhập - MusicPro</title>
+    <title>Login - MusicPro</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,7 +24,7 @@
             <h1>MusicPro</h1>
         </div>
         <a href="index.html" class="back-home-btn">
-            <i class="fas fa-arrow-left"></i> <span>Quay lại</span>
+            <i class="fas fa-arrow-left"></i> <span>Back to Home</span>
         </a>
     </header>
 
@@ -100,6 +100,8 @@
                     <input type="password" id="reg-confirm-password" required placeholder=" " class="password-input">
                     <label for="reg-confirm-password">Confirm password</label>
                     <i class="fas fa-eye-slash toggle-password"></i>
+    
+                    <small id="pass-error-msg" class="error-message">Passwords do not match!</small>
                 </div>
 
                 <button type="submit" class="submit-btn register-mode">Sign up</button>

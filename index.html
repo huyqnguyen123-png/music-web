@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,36 +22,62 @@
         <div class="header-left">
             <div class="logo">
                 <img src="assets/img/logo.png" alt="MusicPro Logo" class="logo-img">
-            <h1>MusicPro</h1>
+                <h1>MusicPro</h1>
+            </div>
         </div>
 
-        </div>
         <div class="search-wrapper">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" id="search-input" placeholder="Tìm kiếm bài hát, nghệ sĩ..." autocomplete="off">
+            <input type="text" id="search-input" placeholder="Search songs, artists..." autocomplete="off">
             <button id="btn-search-trigger"><i class="fas fa-arrow-right"></i></button>
             <div id="search-suggestions" class="suggestions-box hidden"></div>
         </div>
 
-        <div class="header-user-section">
-            <a href="login.html" class="user-icon-btn" title="Đăng nhập"><i class="fas fa-user"></i></a>
-        </div>
+        <div class="header-actions">
+            <div class="user-menu-container">
+                <button id="user-menu-btn" class="user-icon-btn">
+                    <i class="fas fa-user"></i>
+                </button>
 
-        <div class="header-user-section">
-            <button id="btn-user-icon" class="user-icon-btn"><i class="fas fa-user"></i></button>
-            <div id="user-dropdown" class="user-dropdown hidden">
-                <a href="login.html" class="dropdown-item"><i class="fas fa-sign-in-alt"></i> Đăng nhập </a>
+                <div id="guest-dropdown" class="custom-dropdown-menu hidden">
+                    <div class="dropdown-triangle"></div>
+                    <a href="login.html" class="dropdown-item">
+                        <i class="fas fa-sign-in-alt"></i> <span>Log in</span>
+                    </a>
+                    <a href="login.html" class="dropdown-item">
+                        <i class="fas fa-user-plus"></i> <span>Sign up</span>
+                    </a>
+                </div>
+
+                <div id="user-dropdown" class="custom-dropdown-menu hidden">
+                    <div class="dropdown-triangle"></div>
+                    <div class="dropdown-header-info">
+                        <span id="menu-user-name" class="user-name-bold">User Name</span>
+                        <span class="user-role-text">Member</span>
+                    </div>
+                    <div class="divider"></div>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-user-circle"></i> <span>Profile</span>
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-cog"></i> <span>Settings</span>
+                    </a>
+                    <div class="divider"></div>
+                    <a href="#" id="menu-btn-logout" class="dropdown-item danger">
+                        <i class="fas fa-sign-out-alt"></i> <span>Log out</span>
+                    </a>
+                </div>
             </div>
         </div>
     </header>
 
-    <button id="sidebar-toggle-btn" class="floating-menu-btn" title="Đóng/Mở thư viện">
+    <button id="sidebar-toggle-btn" class="floating-menu-btn" title="Toggle Library">
         <i class="fas fa-bars"></i>
     </button>
 
     <main>
         <section class="hero-section">
-            <h1>Albums của tháng</h1>
+            <h1>Albums of the Month</h1>
             <div class="carousel-wrapper">
                 <button id="btn-prev" class="nav-btn btn-left"><i class="fas fa-chevron-left"></i></button>
                 <div id="album-container"></div>
@@ -61,22 +87,22 @@
 
         <div class="main-content">
             <section class="sub-section">
-                <div class="section-header"><h2>Mood & Vibe</h2><a href="#" class="see-all">Xem tất cả</a></div>
+                <div class="section-header"><h2>Mood & Vibe</h2><a href="#" class="see-all">See all</a></div>
                 <div class="grid-mood" id="mood-container"></div>
             </section>
 
             <section class="sub-section">
-                <div class="section-header"><h2>Dòng nhạc yêu thích</h2></div>
+                <div class="section-header"><h2>Favorite Genres</h2></div>
                 <div class="grid-genre" id="genre-container"></div>
             </section>
 
             <section class="sub-section">
-                <div class="section-header"><h2>Mới phát hành</h2></div>
+                <div class="section-header"><h2>New Releases</h2></div>
                 <div class="grid-standard" id="new-release-container"></div>
             </section>
 
             <section class="sub-section">
-                <div class="section-header"><h2>Nghệ sĩ nổi bật</h2></div>
+                <div class="section-header"><h2>Featured Artists</h2></div>
                 <div id="artist-container" class="grid-artist"></div>
             </section>
             
@@ -85,8 +111,8 @@
 
         <section id="search-view" class="view-section hidden">
             <div class="search-header">
-                <button id="btn-back-home" class="btn-text"><i class="fas fa-arrow-left"></i> Quay lại</button>
-                <h2 id="search-title">Kết quả tìm kiếm</h2>
+                <button id="btn-back-home" class="btn-text"><i class="fas fa-arrow-left"></i> Back</button>
+                <h2 id="search-title">Search Results</h2>
             </div>
             <div id="song-list" class="song-list-wrapper"></div>
         </section>
@@ -94,35 +120,30 @@
 
     <aside id="my-sidebar" class="sidebar">
         <div class="lib-header">
-            <div class="lib-title" id="btn-toggle-library" title="Bấm để đóng thư viện">
-                <i class="fas fa-book"></i><span>Thư viện</span>
+            <div class="lib-title" id="btn-toggle-library" title="Close Library">
+                <i class="fas fa-book"></i><span>Library</span>
             </div>
     
             <div class="lib-actions">
-                <button id="btn-create-playlist" class="lib-icon-btn rotate-icon" title="Tạo playlist mới">
+                <button id="btn-create-playlist" class="lib-icon-btn rotate-icon" title="Create Playlist">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
         </div>
 
-        <!-- <div class="lib-filters">
-            <button class="chip active">Tất cả</button>
-            <button class="chip">Playlists</button>
-            <button class="chip">Nghệ sĩ</button>
-        </div> -->
-
         <div id="create-playlist-box" class="create-box hidden">
-            <input type="text" id="playlist-name-input" placeholder="Nhập tên playlist rồi Enter...">
+            <input type="text" id="playlist-name-input" placeholder="Playlist name & Enter...">
         </div>
 
         <div class="lib-content" id="library-content">
             <div class="lib-item" id="btn-view-liked">
                 <img src="https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?w=300" class="lib-img-square" alt="Liked Songs">
                 <div class="lib-info">
-                    <h4>Bài hát đã thích</h4>
-                    <p id="liked-count">Playlist • 0 bài</p> 
+                    <h4>Liked Songs</h4>
+                    <p id="liked-count">Playlist • 0 songs</p> 
                 </div>
             </div>
+            <ul id="my-playlists" style="list-style: none; padding: 0;"></ul>
         </div>
     </aside>
 
@@ -146,8 +167,8 @@
             </div>
 
             <div class="player-controls">
-                <button id="btn-heart" class="heart-btn" title="Thích"><i class="fas fa-heart"></i></button>
-                <button id="btn-add-pl" class="add-pl-btn" title="Thêm vào Playlist"><i class="fas fa-plus-circle"></i></button>
+                <button id="btn-heart" class="heart-btn" title="Like"><i class="fas fa-heart"></i></button>
+                <button id="btn-add-pl" class="add-pl-btn" title="Add to Playlist"><i class="fas fa-plus-circle"></i></button>
             
                 <button id="btn-shuffle"><i class="fas fa-random"></i></button>
                 <button id="btn-prev-song"><i class="fas fa-step-backward"></i></button>
@@ -172,7 +193,7 @@
     <div id="playlist-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Chọn Playlist</h3>
+                <h3>Select Playlist</h3>
                 <button id="close-modal-btn"><i class="fas fa-times"></i></button>
             </div>
             <div id="modal-playlist-list" class="modal-list"></div>
@@ -184,16 +205,18 @@
             <div class="dialog-icon" id="dialog-icon">
                 <i class="fas fa-info-circle"></i>
             </div>
-            <h3 id="dialog-title" style="margin: 10px 0; font-size: 1.1rem;">Thông báo</h3>
-            <p id="dialog-message" style="color: #666; margin-bottom: 20px; font-size: 0.9rem;">Nội dung thông báo...</p>
+            <h3 id="dialog-title" style="margin: 10px 0; font-size: 1.1rem;">Notification</h3>
+            <p id="dialog-message" style="color: #666; margin-bottom: 20px; font-size: 0.9rem;">Message content...</p>
         
             <div class="dialog-actions" style="display: flex; gap: 10px; justify-content: center;">
-                <button id="btn-dialog-cancel" class="btn-text" style="border: 1px solid #ddd; color: #666;">Hủy</button>
-                <button id="btn-dialog-confirm" class="main-play-btn" style="width: auto; height: 36px; border: 1px solid black; padding: 0 20px; border-radius: 18px; font-size: 0.9rem;">Đồng ý</button>
+                <button id="btn-dialog-cancel" class="btn-text" style="border: 1px solid #ddd; color: #666;">Cancel</button>
+                <button id="btn-dialog-confirm" class="main-play-btn" style="width: auto; height: 36px; border: 1px solid black; padding: 0 20px; border-radius: 18px; font-size: 0.9rem;">Confirm</button>
             </div>
         </div>
     </div>
 
+    <script src="assets/js/mock-backend.js"></script>
+    <script src="assets/js/main.js"></script>
     <script src="assets/js/script.js"></script>
 </body>
 </html>

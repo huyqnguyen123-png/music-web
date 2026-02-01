@@ -1,8 +1,8 @@
 /* AUTH PAGE LOGIC  */
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Auth JS đã load thành công!");
+    console.log("Auth JS Loaded - Strict Mode");
 
-    /* TOAST NOTIFICATION SETUP */
+    /* TOAST NOTIFICATION */
     const toastContainer = document.createElement('div');
     toastContainer.id = 'toast-container';
     document.body.appendChild(toastContainer);
@@ -10,26 +10,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function showToast(message, type = 'success') {
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        
         const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
         
-        toast.innerHTML = `
-            <i class="fas ${iconClass}"></i>
-            <span class="toast-msg">${message}</span>
-        `;
-
+        toast.innerHTML = `<i class="fas ${iconClass}"></i><span class="toast-msg">${message}</span>`;
         toastContainer.appendChild(toast);
 
         setTimeout(() => {
             toast.classList.add('hide');
             toast.addEventListener('animationend', () => toast.remove());
         }, 3000);
-
         toast.addEventListener('click', () => toast.remove());
     }
 
-
-    /* DOM ELEMENTS SELECTION*/
+    /* DOM ELEMENTS */
     const tabBtns = document.querySelectorAll('.tab-btn');
     const forms = document.querySelectorAll('.auth-form');
     const registerForm = document.getElementById('register-form');
@@ -39,11 +32,134 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const countryInput = document.getElementById('app-search-field'); 
     const countryList = document.getElementById('country-list');
-    const phoneInput = document.getElementById('reg-phone');
     const dropdownContainer = document.querySelector('.custom-dropdown');
 
+    const passInput = document.getElementById('reg-password');
+    const confirmInput = document.getElementById('reg-confirm-password');
+    const errorMsg = document.getElementById('pass-error-msg'); 
 
-    /* SLIDING TAB */
+    /* LOGIC VALIDATION FORM */
+    function clearErrorOnInput(inputElement) {
+        inputElement.addEventListener('input', () => {
+            if(inputElement.value.trim() !== '') {
+                inputElement.classList.remove('input-error');
+            }
+        });
+    }
+
+    if (registerForm) {
+        const requiredInputs = registerForm.querySelectorAll('input[required]');
+        requiredInputs.forEach(input => clearErrorOnInput(input));
+    }
+
+    function checkPasswordMatch() {
+        if (!passInput || !confirmInput) return true;
+        
+        const pass = passInput.value;
+        const confirm = confirmInput.value;
+
+        if (confirm.length > 0) {
+            if (pass !== confirm) {
+                confirmInput.classList.add('input-error');
+                if (errorMsg) errorMsg.style.display = 'block';
+                return false;
+            } else {
+                confirmInput.classList.remove('input-error');
+                if (errorMsg) errorMsg.style.display = 'none';
+                return true;
+            }
+        } else {
+            confirmInput.classList.remove('input-error');
+            if (errorMsg) errorMsg.style.display = 'none';
+            return false;
+        }
+    }
+
+    if (passInput && confirmInput) {
+        confirmInput.addEventListener('input', checkPasswordMatch);
+        passInput.addEventListener('input', checkPasswordMatch); 
+    }
+
+    /* REGISTER SUBMIT HANDLER */
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const inputs = registerForm.querySelectorAll('input[required]');
+            let isAnyEmpty = false;
+
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    input.classList.add('input-error');
+                    isAnyEmpty = true;
+                } else {
+                    if (input.id !== 'reg-confirm-password') {
+                        input.classList.remove('input-error');
+                    }
+                }
+            });
+
+            if (isAnyEmpty) {
+                showToast("Please fill in all highlighted fields!", "error");
+                return; 
+            }
+
+            const password = passInput.value;
+            const confirmPass = confirmInput.value;
+
+            if (password !== confirmPass) {
+                confirmInput.classList.add('input-error');
+                if (errorMsg) errorMsg.style.display = 'block';
+                showToast("Passwords do not match!", "error");
+                return;
+            }
+
+            if (password.length < 6) {
+                passInput.classList.add('input-error');
+                showToast("Password must be at least 6 characters.", "error");
+                return;
+            }
+
+            const firstName = document.getElementById('reg-firstname').value.trim();
+            const lastName = document.getElementById('reg-lastname').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const country = document.getElementById('app-search-field').value;
+
+            const btn = registerForm.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = "Processing...";
+            btn.style.opacity = "0.7";
+            btn.disabled = true;
+
+            try {
+                const newUser = { id: Date.now(), firstName, lastName, country, phone, email, password };
+                const res = await MockBackend.register(newUser);
+                
+                showToast(`Success! ${res.message}`, "success");
+                
+                setTimeout(() => {
+                    document.querySelector('[data-target="login-form"]').click();
+                    document.getElementById('login-email').value = email;
+                    registerForm.reset();
+                    inputs.forEach(i => i.classList.remove('input-error'));
+                    if (errorMsg) errorMsg.style.display = 'none';
+                }, 1500);
+
+            } catch (err) {
+                showToast(err, "error");
+                if (err.includes("Email")) {
+                    document.getElementById('reg-email').classList.add('input-error');
+                }
+            } finally {
+                btn.innerText = originalText;
+                btn.style.opacity = "1";
+                btn.disabled = false;
+            }
+        });
+    }
+
+    /* SLIDING TAB, LOGIN, COUNTRY... */
     function moveHighlighter(targetBtn) {
         if (!highlighter || !targetBtn) return;
         const width = targetBtn.offsetWidth;
@@ -51,27 +167,22 @@ document.addEventListener('DOMContentLoaded', () => {
         highlighter.style.width = `${width}px`;
         highlighter.style.transform = `translateX(${left}px)`;
     }
-
     const activeBtn = document.querySelector('.tab-btn.active');
     if (activeBtn && highlighter) {
         moveHighlighter(activeBtn);
         setTimeout(() => { highlighter.style.opacity = '1'; }, 100);
     }
-
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             moveHighlighter(btn);
-            
             tabBtns.forEach(b => b.classList.remove('active'));
             forms.forEach(f => {
                 f.classList.remove('active');
                 f.classList.remove('fade-in');
             });
-
             btn.classList.add('active');
             const targetId = btn.getAttribute('data-target');
             const targetForm = document.getElementById(targetId);
-
             if (targetForm) {
                 targetForm.classList.add('active');
                 void targetForm.offsetWidth; 
@@ -80,12 +191,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-
-    /* SHOW/HIDE PASSWORD */
     togglePasswordIcons.forEach(icon => {
         icon.addEventListener('click', function() {
             const input = this.parentElement.querySelector('input');
-            
             if (input.type === 'password') {
                 input.type = 'text'; 
                 this.classList.remove('fa-eye-slash');
@@ -98,83 +206,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-
-    /* REGISTER FORM HANDLER  */
-    if (registerForm) {
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const firstName = document.getElementById('reg-firstname').value.trim();
-            const lastName = document.getElementById('reg-lastname').value.trim();
-            const phone = document.getElementById('reg-phone').value.trim();
-            const email = document.getElementById('reg-email').value.trim();
-            const password = document.getElementById('reg-password').value;
-            const confirmPass = document.getElementById('reg-confirm-password').value;
-            const country = document.getElementById('app-search-field').value;
-
-            if (password !== confirmPass) {
-                showToast("Mật khẩu nhập lại không khớp!", "error");
-                return;
-            }
-            if (password.length < 6) {
-                showToast("Mật khẩu quá ngắn (tối thiểu 6 ký tự).", "error");
-                return;
-            }
-
-            const btn = registerForm.querySelector('button');
-            const originalText = btn.innerText;
-            btn.innerText = "Đang xử lý...";
-            btn.style.opacity = "0.7";
-            btn.disabled = true;
-
-            try {
-                const newUser = { id: Date.now(), firstName, lastName, country, phone, email, password };
-                
-                const res = await MockBackend.register(newUser);
-                
-                showToast(`Thành công! ${res.message}`, "success");
-                
-                setTimeout(() => {
-                    document.querySelector('[data-target="login-form"]').click();
-                    document.getElementById('login-email').value = email;
-                }, 1500);
-
-            } catch (err) {
-                showToast(err, "error");
-            } finally {
-                btn.innerText = originalText;
-                btn.style.opacity = "1";
-                btn.disabled = false;
-            }
-        });
-    }
-
-
-    /* LOGIN FORM HANDLER */
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
-
             const btn = loginForm.querySelector('button');
             const originalText = btn.innerText;
-            btn.innerText = "Đang kiểm tra...";
+            btn.innerText = "Checking...";
             btn.style.opacity = "0.7";
             btn.disabled = true;
-
             try {
                 const res = await MockBackend.login(email, password);
-                
-                showToast(`Chào mừng trở lại, ${res.user.firstName}!`, "success");
-                
-                setTimeout(() => {
-                    window.location.href = 'index.html'; 
-                }, 1000);
-
+                showToast(`Welcome back, ${res.user.firstName}!`, "success");
+                setTimeout(() => { window.location.href = 'index.html'; }, 1000);
             } catch (err) {
-                showToast("Email hoặc mật khẩu không chính xác!", "error");
+                showToast("Incorrect email or password!", "error");
             } finally {
                 btn.innerText = originalText;
                 btn.style.opacity = "1";
@@ -183,13 +230,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-    /* COUNTRY AND PHONE NUMBER  */
+    // Country Logic
     function getIsoCodeFromEmoji(flagEmoji) {
         const codePoints = Array.from(flagEmoji).map(c => c.codePointAt() - 127397);
         return String.fromCodePoint(...codePoints).toLowerCase();
     }
-
     const countries = [
         { name: "Afghanistan", flag: "🇦🇫", code: "+93" },
         { name: "Albania", flag: "🇦🇱", code: "+355" },
@@ -434,75 +479,43 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     function renderCountries(filterText = "") {
+        if (!countryList) return;
         countryList.innerHTML = ""; 
-        
-        const filtered = countries.filter(c => 
-            c.name.toLowerCase().includes(filterText.toLowerCase())
-        );
-
+        const filtered = countries.filter(c => c.name.toLowerCase().includes(filterText.toLowerCase()));
         if (filtered.length === 0) {
             countryList.innerHTML = `<div class="dropdown-item" style="pointer-events:none; color:#999;">No country found</div>`;
             return;
         }
-
         filtered.forEach(country => {
             const item = document.createElement('div');
             item.className = 'dropdown-item';
-            
             let isoCode = 'vn'; 
-            try {
-                isoCode = getIsoCodeFromEmoji(country.flag);
-            } catch (e) {
-                console.error("Lỗi parse cờ:", country.name);
-            }
-
-            item.innerHTML = `
-                <img src="https://flagcdn.com/w40/${isoCode}.png" 
-                     srcset="https://flagcdn.com/w80/${isoCode}.png 2x" 
-                     width="24" 
-                     height="16" 
-                     alt="${country.name}" 
-                     class="flag-img"> 
-                <span>${country.name}</span>
-            `;
-            
+            try { isoCode = getIsoCodeFromEmoji(country.flag); } catch (e) {}
+            item.innerHTML = `<img src="https://flagcdn.com/w40/${isoCode}.png" srcset="https://flagcdn.com/w80/${isoCode}.png 2x" width="24" height="16" alt="${country.name}" class="flag-img"><span>${country.name}</span>`;
             item.addEventListener('click', () => {
                 countryInput.value = country.name;
-                phoneInput.value = country.code + " ";
-                phoneInput.focus(); 
+                if(document.getElementById('reg-phone')) {
+                    document.getElementById('reg-phone').value = country.code + " ";
+                    document.getElementById('reg-phone').focus(); 
+                }
                 closeDropdown();
             });
-
             countryList.appendChild(item);
         });
     }
-
     function openDropdown() {
-        countryList.classList.add('show');
-        dropdownContainer.classList.add('open');
+        if(countryList) countryList.classList.add('show');
+        if(dropdownContainer) dropdownContainer.classList.add('open');
     }
-
     function closeDropdown() {
-        countryList.classList.remove('show');
-        dropdownContainer.classList.remove('open');
+        if(countryList) countryList.classList.remove('show');
+        if(dropdownContainer) dropdownContainer.classList.remove('open');
     }
-
     if (countryInput) {
-        countryInput.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            renderCountries(); 
-            openDropdown();
-        });
-
-        countryInput.addEventListener('input', (e) => {
-            renderCountries(e.target.value);
-            openDropdown();
-        });
-
+        countryInput.addEventListener('click', (e) => { e.stopPropagation(); renderCountries(); openDropdown(); });
+        countryInput.addEventListener('input', (e) => { renderCountries(e.target.value); openDropdown(); });
         document.addEventListener('click', (e) => {
-            if (!dropdownContainer.contains(e.target)) {
-                closeDropdown();
-            }
+            if (dropdownContainer && !dropdownContainer.contains(e.target)) { closeDropdown(); }
         });
     }
 });

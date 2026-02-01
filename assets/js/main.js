@@ -1,65 +1,57 @@
 /* SESSION CHECK & USER PROFILE LOGIC */
 document.addEventListener('DOMContentLoaded', async () => {
+    // SELECT DOM ELEMENTS
+    const menuBtn = document.getElementById('user-menu-btn');
+    const guestDropdown = document.getElementById('guest-dropdown');
+    const userDropdown = document.getElementById('user-dropdown');
+    const menuUserName = document.getElementById('menu-user-name');
+    const btnLogout = document.getElementById('menu-btn-logout');
 
-    /* DOM ELEMENTS SELECTION */
-    const btnLogin = document.getElementById('btn-login-link');
-    const btnLogout = document.getElementById('btn-logout');
-    const userProfile = document.getElementById('user-profile');
-    const userName = document.getElementById('user-name');
-    const userAvatar = document.getElementById('user-avatar');
-    const playlistContainer = document.getElementById('my-playlists'); 
-
-
-    /* INITIAL CLEANUP */
-    if (playlistContainer) playlistContainer.innerHTML = '';
-    
-    document.querySelectorAll('.btn-heart.active').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-
-    /* SESSION STATE HANDLING */
+    // CHECK LOGIN SESSION
     const currentUser = MockBackend.getCurrentUser();
 
+    function closeAllDropdowns() {
+        if(guestDropdown) guestDropdown.classList.add('hidden');
+        if(userDropdown) userDropdown.classList.add('hidden');
+    }
+
     if (currentUser) {
-        console.log("Session Status: Active | User:", currentUser.email);
+        console.log("Session Active:", currentUser.email);
 
-        if (btnLogin) btnLogin.style.display = 'none';
-        if (userProfile) userProfile.style.display = 'block';
+        const avatarUrl = `https://ui-avatars.com/api/?name=${currentUser.firstName}+${currentUser.lastName}&background=random&color=fff&size=128`;
+        menuBtn.innerHTML = `<img src="${avatarUrl}" alt="Avatar">`;
+        
+        if(menuUserName) menuUserName.innerText = `${currentUser.firstName} ${currentUser.lastName}`;
 
-        if (userName) userName.innerText = currentUser.firstName;
-        if (userAvatar) userAvatar.src = `https://ui-avatars.com/api/?name=${currentUser.firstName}&background=random`;
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = userDropdown.classList.contains('hidden');
+            closeAllDropdowns(); 
+            if (isHidden) userDropdown.classList.remove('hidden');
+        });
 
-        const userData = await MockBackend.getUserData();
-
-        if (playlistContainer && userData.playlists) {
-            userData.playlists.forEach(pl => {
-                const li = document.createElement('li');
-                li.innerHTML = `<a href="#">${pl.name}</a>`;
-                playlistContainer.appendChild(li);
-            });
-        }
-
-        if (userData.favorites) {
-            userData.favorites.forEach(song => {
-                const btn = document.querySelector(`.btn-heart[data-id="${song.id}"]`);
-                if (btn) btn.classList.add('active');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', () => {
+                MockBackend.logout();
+                window.location.reload(); 
             });
         }
 
     } else {
         console.log("Session Status: Guest");
-        if (btnLogin) btnLogin.style.display = 'block';
-        if (userProfile) userProfile.style.display = 'none';
-    }
-
-
-    /* EVENT LISTENERS */
-    if (btnLogout) {
-        btnLogout.addEventListener('click', () => {
-            MockBackend.logout();
-            window.location.reload();
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = guestDropdown.classList.contains('hidden');
+            closeAllDropdowns(); 
+            if (isHidden) guestDropdown.classList.remove('hidden');
         });
     }
 
+    document.addEventListener('click', (e) => {
+        if (!menuBtn.contains(e.target) && 
+            !guestDropdown.contains(e.target) && 
+            !userDropdown.contains(e.target)) {
+            closeAllDropdowns();
+        }
+    });
 });

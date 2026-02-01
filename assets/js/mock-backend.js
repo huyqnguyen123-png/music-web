@@ -1,23 +1,23 @@
-/* Server & Database Simulation */
 const DB_KEY = 'musicpro_users'; 
 const SESSION_KEY = 'musicpro_current_user'; 
+
 const MockBackend = {
     register: async (newUser) => {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 const users = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
-
-                const existingUser = users.find(u => u.email === newUser.email);
-                if (existingUser) {
-                    reject("Email này đã được sử dụng!");
+                if (users.find(u => u.email === newUser.email)) {
+                    reject("This email is already in use!");
                     return;
                 }
-
                 users.push(newUser);
                 localStorage.setItem(DB_KEY, JSON.stringify(users));
+                
+                const initialData = { favorites: [], playlists: [] };
+                localStorage.setItem(`musicpro_data_${newUser.id}`, JSON.stringify(initialData));
 
-                resolve({ message: "Tạo tài khoản thành công!" });
-            }, 1000); 
+                resolve({ message: "Account created successfully!" });
+            }, 800); 
         });
     },
 
@@ -25,22 +25,15 @@ const MockBackend = {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 const users = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
-
                 const user = users.find(u => u.email === email && u.password === password);
-
                 if (user) {
                     const { password, ...userWithoutPass } = user;
-                    
                     localStorage.setItem(SESSION_KEY, JSON.stringify(userWithoutPass));
-                    
-                    resolve({ 
-                        message: "Đăng nhập thành công!",
-                        user: userWithoutPass
-                    });
+                    resolve({ message: "Login successful!", user: userWithoutPass });
                 } else {
-                    reject("Email hoặc mật khẩu không chính xác.");
+                    reject("Incorrect email or password.");
                 }
-            }, 800);
+            }, 500);
         });
     },
 
@@ -50,5 +43,27 @@ const MockBackend = {
 
     logout: () => {
         localStorage.removeItem(SESSION_KEY);
+    },
+
+    getUserData: async () => {
+        const currentUser = JSON.parse(localStorage.getItem(SESSION_KEY));
+        if (!currentUser) return { favorites: [], playlists: [] }; 
+
+        const dataKey = `musicpro_data_${currentUser.id}`; 
+        return JSON.parse(localStorage.getItem(dataKey)) || { favorites: [], playlists: [] };
+    },
+
+    updateUserData: async (favorites, playlists) => {
+        const currentUser = JSON.parse(localStorage.getItem(SESSION_KEY));
+        if (!currentUser) return;
+
+        const dataKey = `musicpro_data_${currentUser.id}`;
+        const newData = {
+            favorites: favorites || [],
+            playlists: playlists || []
+        };
+        
+        localStorage.setItem(dataKey, JSON.stringify(newData));
+        console.log(`Data has been saved for User ID: ${currentUser.id}`);
     }
 };

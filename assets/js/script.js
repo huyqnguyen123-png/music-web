@@ -49,8 +49,12 @@ const artistData = [
 let currentAudio = new Audio();
 let playlist = [];
 let searchResults = [];
-let myPlaylists = JSON.parse(localStorage.getItem('user_playlists')) || [];
-let likedSongs = JSON.parse(localStorage.getItem('user_liked_songs')) || [];
+
+// --- SỬA ĐỔI QUAN TRỌNG: Không load trực tiếp từ LocalStorage nữa ---
+let myPlaylists = [];
+let likedSongs = [];
+// -------------------------------------------------------------------
+
 let activeIndex = 1;
 let currentIndex = 0;
 let isPlaying = false;
@@ -62,7 +66,7 @@ let currentFocus = -1;
 let currentGenreRegion = 'all'; 
 
 
-/*  DOM ELEMENTS */
+/* DOM ELEMENTS */
 /* Layout & Views */
 const homeView = document.querySelector('.hero-section');
 const mainContent = document.querySelector('.main-content');
@@ -121,8 +125,23 @@ const closeModalBtn = document.getElementById('close-modal-btn');
 // Init rendering
 renderCoverflow();
 renderStaticGrids();
-loadUserPlaylists();
-if (likedCountEl) likedCountEl.innerText = `Playlist • ${likedSongs.length} bài`;
+
+// --- SỬA ĐỔI: Load Data từ Backend ---
+initUserData();
+
+async function initUserData() {
+    // Gọi Backend để lấy dữ liệu đúng của User hiện tại
+    const data = await MockBackend.getUserData(); 
+    
+    // Cập nhật biến toàn cục
+    myPlaylists = data.playlists || [];
+    likedSongs = data.favorites || [];
+
+    // Render lại giao diện
+    loadUserPlaylists(); 
+    if (likedCountEl) likedCountEl.innerText = `Playlist • ${likedSongs.length} songs`;
+}
+// -------------------------------------
 
 // Auto-open sidebar on large screens
 window.addEventListener('DOMContentLoaded', () => {
@@ -146,7 +165,7 @@ function renderStaticGrids() {
         const card = document.createElement('div');
         card.className = 'card-genre';
         card.innerHTML = `<img src="${item.img}" loading="lazy"><h4>${item.name}</h4>`;
-        card.addEventListener('click', () => openGenreDetail(item.name, 'Thể loại'));
+        card.addEventListener('click', () => openGenreDetail(item.name, 'Genre'));
         genreContainer.appendChild(card);
     });
 
@@ -200,7 +219,7 @@ function switchToView(viewName, titleText = '') {
 
         if (!history.state || history.state.view !== viewName) {
             history.pushState({ view: viewName }, "", `#${viewName}`);
-            document.title = titleText || "Chi tiết"; 
+            document.title = titleText || "Detail"; 
         }
     }
 }
@@ -268,14 +287,14 @@ async function handleSearch() {
         }));
 
         suggestionBox.classList.add('hidden');
-        switchToView('search', `Kết quả: "${query}"`);
+        switchToView('search', `Results for: "${query}"`);
         renderSongList(searchResults);
 
         const icon = btnSearchTrigger.querySelector('i');
         if(icon) icon.className = 'fas fa-times';
 
     } catch (error) {
-        console.error("Lỗi kết nối API:", error);
+        console.error("API Error:", error);
     }
 }
 
@@ -284,7 +303,7 @@ function renderSongList(sourceArray) {
     songListEl.innerHTML = '';
 
     if (!sourceArray || sourceArray.length === 0) {
-        songListEl.innerHTML = '<p style="text-align:center; color:#888; margin-top:20px;">Không tìm thấy bài hát nào.</p>';
+        songListEl.innerHTML = '<p style="text-align:center; color:#888; margin-top:20px;">No songs found.</p>';
         return;
     }
 
@@ -330,7 +349,7 @@ function renderSuggestions(items, isHistory = false) {
     }
     
     let html = '';
-    if (isHistory) html += `<div class="suggestion-header" style="padding:8px 15px; font-size:0.75rem; color:#888; font-weight:bold; background:#fafafa;">LỊCH SỬ TÌM KIẾM</div>`;
+    if (isHistory) html += `<div class="suggestion-header" style="padding:8px 15px; font-size:0.75rem; color:#888; font-weight:bold; background:#fafafa;">SEARCH HISTORY</div>`;
     
     items.forEach(item => {
         const icon = isHistory ? 'fa-history' : 'fa-music';
@@ -491,39 +510,53 @@ function toggleSidebar(forceState = null) {
 }
 
 function addNewPlaylist(name) {
+    // Kiểm tra đăng nhập
+    if (!MockBackend.getCurrentUser()) {
+        CustomDialog.alert("Please login to create playlists!");
+        return;
+    }
+
     const newPl = { id: Date.now(), name: name, songs: [] };
     myPlaylists.push(newPl);
-    savePlaylistsToStorage();
+    
+    // --- SỬA ĐỔI: Lưu vào Backend ---
+    saveUserData(); 
+    // --------------------------------
+    
     renderSinglePlaylist(newPl);
 }
 
-function savePlaylistsToStorage() {
-    localStorage.setItem('user_playlists', JSON.stringify(myPlaylists));
-}
-
-function saveLikedSongsToStorage() {
-    localStorage.setItem('user_liked_songs', JSON.stringify(likedSongs));
+function saveUserData() {
+    MockBackend.updateUserData(likedSongs, myPlaylists);
 }
 
 function loadUserPlaylists() {
+    // Xóa danh sách cũ trên giao diện
+    const container = document.getElementById('my-playlists'); 
+    if (container) container.innerHTML = ''; // Clear container
+
     [...myPlaylists].reverse().forEach(pl => {
         renderSinglePlaylist(pl);
     });
 }
 
 function renderSinglePlaylist(playlistData) {
-    const div = document.createElement('div');
-    div.className = 'lib-item';
-    div.setAttribute('data-id', playlistData.id);
+    // Tìm đúng container để append
+    const container = document.getElementById('my-playlists');
+    if (!container) return; // Nếu không tìm thấy sidebar list thì dừng
+
+    const li = document.createElement('li');
+    li.className = 'lib-item';
+    li.setAttribute('data-id', playlistData.id);
     const randomColor = Math.floor(Math.random()*16777215).toString(16);
 
-    div.innerHTML = `
+    li.innerHTML = `
         <div class="lib-img-box" style="background: #${randomColor}; display: flex; align-items: center; justify-content: center; color: white;">
             <i class="fas fa-music"></i>
         </div>
         <div class="lib-info">
             <h4>${playlistData.name}</h4>
-            <p>${playlistData.songs.length} bài • Của bạn</p>
+            <p>${playlistData.songs.length} songs • Yours</p>
         </div>
         <button class="btn-delete-pl" style="background:none; border:none; color:#999; margin-left:auto; cursor:pointer; padding:5px;">
             <i class="fas fa-trash"></i>
@@ -531,7 +564,7 @@ function renderSinglePlaylist(playlistData) {
     `;
 
     // Click to view playlist
-    div.addEventListener('click', (e) => {
+    li.addEventListener('click', (e) => {
         if (e.target.closest('.btn-delete-pl')) return;
         playlist = playlistData.songs; 
         switchToView('playlist', playlistData.name);
@@ -540,26 +573,21 @@ function renderSinglePlaylist(playlistData) {
     });
 
 
-    const btnDelete = div.querySelector('.btn-delete-pl');
+    const btnDelete = li.querySelector('.btn-delete-pl');
     btnDelete.addEventListener('click', async () => {
         const isAgreed = await CustomDialog.confirm(
-            `Bạn có chắc muốn xóa playlist "${playlistData.name}"?`,
-            "Xóa Playlist"
+            `Delete playlist "${playlistData.name}"?`,
+            "Delete Playlist"
         );
 
         if (isAgreed) {
             myPlaylists = myPlaylists.filter(pl => pl.id !== playlistData.id);
-            savePlaylistsToStorage();
-            div.remove();
+            saveUserData(); // Lưu lại vào backend
+            li.remove();
         }
     });
 
-    if(libContent.children.length > 0) {
-        libContent.insertBefore(div, libContent.children[1]);
-    } else {
-        libContent.appendChild(div);
-    }
-    div.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    container.appendChild(li);
 }
 
 function addSongToPlaylist(playlistId, song) {
@@ -568,21 +596,20 @@ function addSongToPlaylist(playlistId, song) {
 
     const isExist = targetPl.songs.some(s => s.src === song.src);
     if (isExist) {
-        CustomDialog.alert(`Bài hát "${song.title}" đã có trong playlist "${targetPl.name}" rồi!`);
+        CustomDialog.alert(`"${song.title}" is already in "${targetPl.name}"!`);
         return;
     }
 
     targetPl.songs.push(song);
-    savePlaylistsToStorage();
+    saveUserData(); // Lưu backend
     
     // Update sidebar text
     const sidebarItem = document.querySelector(`.lib-item[data-id="${playlistId}"] p`);
     if(sidebarItem) {
-        sidebarItem.innerText = `${targetPl.songs.length} bài • Của bạn`;
+        sidebarItem.innerText = `${targetPl.songs.length} songs • Yours`;
     }
 
     triggerSuccessAnimation();
-    console.log(`Đã thêm ${song.title} vào ${targetPl.name}`);
 }
 
 function triggerSuccessAnimation() {
@@ -605,7 +632,7 @@ function showSelectPlaylistModal(song) {
             </div>
             <div class="modal-item-info">
                 <h4>${pl.name}</h4>
-                <p>${pl.songs.length} bài</p>
+                <p>${pl.songs.length} songs</p>
             </div>
         `;
         div.addEventListener('click', () => {
@@ -639,7 +666,7 @@ async function openAlbumDetail(albumTitle, artistName) {
                     <div class="loading-bar"></div><div class="loading-bar"></div>
                     <div class="loading-bar"></div><div class="loading-bar"></div>
                 </div>
-                <p style="margin-top:15px;">Đang tìm kiếm...</p>
+                <p style="margin-top:15px;">Loading...</p>
             </div>
         `;
     }
@@ -668,7 +695,7 @@ async function openAlbumDetail(albumTitle, artistName) {
         }
 
         if (finalDisplayList.length === 0) {
-            songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Không tìm thấy bài hát nào.</p>`;
+            songListEl.innerHTML = `<p style="text-align:center; padding:20px;">No songs found.</p>`;
             return;
         }
 
@@ -683,8 +710,8 @@ async function openAlbumDetail(albumTitle, artistName) {
         renderSongList(albumSongs);
 
     } catch (error) {
-        console.error("Lỗi:", error);
-        if(songListEl) songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Lỗi kết nối.</p>`;
+        console.error("Error:", error);
+        if(songListEl) songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Connection failed.</p>`;
     }
 }
 
@@ -710,7 +737,7 @@ async function openArtistDetail(artistName) {
     switchToView('search');
     if(searchHeaderTitle) {
         searchHeaderTitle.innerHTML = `
-            <span style="font-size: 0.8em; color: #666; display:block; margin-bottom:5px;">NGHỆ SĨ</span>
+            <span style="font-size: 0.8em; color: #666; display:block; margin-bottom:5px;">ARTIST</span>
             ${artistName}
         `;
     }
@@ -722,7 +749,7 @@ async function openArtistDetail(artistName) {
                     <div class="loading-bar"></div><div class="loading-bar"></div>
                     <div class="loading-bar"></div><div class="loading-bar"></div>
                 </div>
-                <p style="margin-top:15px;">Đang tìm...</p>
+                <p style="margin-top:15px;">Searching...</p>
             </div>
         `;
     }
@@ -757,7 +784,7 @@ async function openArtistDetail(artistName) {
         });
 
         if (uniqueSongs.length === 0) {
-            songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Không tìm thấy bài hát nào.</p>`;
+            songListEl.innerHTML = `<p style="text-align:center; padding:20px;">No songs found.</p>`;
             return;
         }
 
@@ -773,8 +800,8 @@ async function openArtistDetail(artistName) {
         renderSongList(artistSongs);
 
     } catch (error) {
-        console.error("Lỗi:", error);
-        if(songListEl) songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Lỗi xử lý dữ liệu.</p>`;
+        console.error("Error:", error);
+        if(songListEl) songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Processing error.</p>`;
     }
 }
 
@@ -801,11 +828,11 @@ async function openGenreDetail(name, type) {
     }
     if (!isMood) {
         const filters = [
-            { id: 'all', label: 'Quốc tế' },    
+            { id: 'all', label: 'Global' },    
             { id: 'us-uk', label: 'US-UK' },
-            { id: 'v-pop', label: 'Việt Nam' }, 
-            { id: 'k-pop', label: 'Hàn Quốc' }, 
-            { id: 'j-pop', label: 'Nhật Bản' },
+            { id: 'v-pop', label: 'Vietnam' }, 
+            { id: 'k-pop', label: 'K-Pop' }, 
+            { id: 'j-pop', label: 'J-Pop' },
             { id: 'ghost', label: '        ' },
             { id: 'ghost', label: '        ' },
             { id: 'ghost', label: '        ' },
@@ -843,7 +870,7 @@ async function openGenreDetail(name, type) {
 
 async function fetchGenreData(genreName, region, isMood) {
     if(songListEl) {
-        const msg = isMood ? `Đang pha chế mood ${genreName}...` : `Đang tìm kiếm Top50 ${genreName}...`;
+        const msg = isMood ? `Mixing mood ${genreName}...` : `Searching Top 50 ${genreName}...`;
         songListEl.innerHTML = `
             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 0; color:#888;">
                 <div class="loading-wave">
@@ -869,13 +896,13 @@ async function fetchGenreData(genreName, region, isMood) {
             case 'v-pop':
                 countryCode = 'VN'; 
                 if (genreName.toLowerCase() === 'indie') {
-                    searchTerm = 'Indie Việt Nam'; 
+                    searchTerm = 'Indie Vietnam'; 
                 } else if (genreName.toLowerCase().includes('pop')) {
                     searchTerm = 'V-Pop'; 
                 } else if (genreName.toLowerCase().includes('HipHop')) {
-                    searchTerm = 'Hiphop Hots 100 Việt Nam';
+                    searchTerm = 'Hiphop Hots 100 Vietnam';
                 } else {
-                    searchTerm = `${genreName} Việt Nam`; 
+                    searchTerm = `${genreName} Vietnam`; 
                 }
                 break;
 
@@ -910,7 +937,7 @@ async function fetchGenreData(genreName, region, isMood) {
         const res = await fetch(apiUrl + `&_t=${Date.now()}`);
         const data = await res.json();
 
-        if (!data || !data.results) throw new Error("Dữ liệu trống");
+        if (!data || !data.results) throw new Error("Empty Data");
 
         let cleanList = data.results.filter(item => item.previewUrl);
 
@@ -935,7 +962,7 @@ async function fetchGenreData(genreName, region, isMood) {
         }
 
         if (cleanList.length === 0) {
-            songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Không tìm thấy bài hát phù hợp.</p>`;
+            songListEl.innerHTML = `<p style="text-align:center; padding:20px;">No suitable songs found.</p>`;
             return;
         }
 
@@ -950,8 +977,8 @@ async function fetchGenreData(genreName, region, isMood) {
         renderSongList(finalSongs);
 
     } catch (error) {
-        console.error("Lỗi:", error);
-        if(songListEl) songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Lỗi kết nối hoặc không tải được dữ liệu.</p>`;
+        console.error("Error:", error);
+        if(songListEl) songListEl.innerHTML = `<p style="text-align:center; padding:20px;">Connection failed.</p>`;
     }
 }
 
@@ -968,7 +995,7 @@ if(btnBackHome) {
 
 if(btnViewLiked) {
     btnViewLiked.addEventListener('click', () => {
-        switchToView('liked', 'Bài hát đã thích');
+        switchToView('liked', 'Liked Songs');
         renderSongList(likedSongs);
         if (window.innerWidth <= 768) toggleSidebar(false);
     });
@@ -1193,6 +1220,12 @@ if(volumeSlider) {
 
 /* --- Playlist Actions --- */
 btnCreatePlaylist.addEventListener('click', () => {
+    // Kiểm tra đăng nhập trước khi hiện ô nhập
+    if (!MockBackend.getCurrentUser()) {
+        CustomDialog.alert("Please login to create playlists!");
+        return;
+    }
+
     btnCreatePlaylist.classList.toggle('active');
     createPlaylistBox.classList.toggle('hidden');
     if (!createPlaylistBox.classList.contains('hidden')) {
@@ -1216,6 +1249,12 @@ inputPlaylistName.addEventListener('keypress', (e) => {
 
 /* --- Heart / Liked Songs --- */
 btnHeart.addEventListener('click', () => {
+    // Kiểm tra đăng nhập
+    if (!MockBackend.getCurrentUser()) {
+        CustomDialog.alert("Please login to like songs!");
+        return;
+    }
+
     const currentSong = playlist[currentIndex];
     if(!currentSong) return;
 
@@ -1228,19 +1267,25 @@ btnHeart.addEventListener('click', () => {
         btnHeart.classList.remove('active');
     }
     
-    saveLikedSongsToStorage();
-    if (likedCountEl) likedCountEl.innerText = `Playlist • ${likedSongs.length} bài`;
+    saveUserData(); // Lưu backend
+    if (likedCountEl) likedCountEl.innerText = `Playlist • ${likedSongs.length} songs`;
     if (isViewingLiked) renderSongList(likedSongs);
 });
 
 /* --- Add to Playlist Modal --- */
 if(btnAddPl) {
     btnAddPl.addEventListener('click', () => {
+        // Kiểm tra đăng nhập
+        if (!MockBackend.getCurrentUser()) {
+            CustomDialog.alert("Please login to add songs!");
+            return;
+        }
+
         const currentSong = playlist[currentIndex];
         if (!currentSong) return;
 
         if (myPlaylists.length === 0) {
-            CustomDialog.alert('Bạn chưa tạo playlist nào! Hãy tạo playlist mới trong thư viện trước.')
+            CustomDialog.alert('You have no playlists! Create one in the library first.')
                 .then(() => {
                     toggleSidebar(true);
                     if(btnCreatePlaylist) btnCreatePlaylist.click();
@@ -1288,7 +1333,7 @@ const CustomDialog = {
     btnCancel: document.getElementById('btn-dialog-cancel'),
     content: document.querySelector('#custom-dialog .dialog-content'),
 
-    alert: function(msg, title = "Thông báo") {
+    alert: function(msg, title = "Notice") {
         return new Promise((resolve) => {
             this.setupUI(title, msg, 'alert');
             
@@ -1299,7 +1344,7 @@ const CustomDialog = {
         });
     },
 
-    confirm: function(msg, title = "Xác nhận") {
+    confirm: function(msg, title = "Confirm") {
         return new Promise((resolve) => {
             this.setupUI(title, msg, 'confirm');
 

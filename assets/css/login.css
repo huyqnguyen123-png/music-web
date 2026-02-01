@@ -513,3 +513,25 @@ select {
     from { opacity: 1; transform: translateX(0); }
     to { opacity: 0; transform: translateX(100%); }
 }
+
+/* ERROR STYLES */
+.input-error {
+    border-color: #ff4757 !important;
+    background-color: #fff5f5 !important;
+    animation: shake 0.3s ease-in-out;
+}
+
+.error-message {
+    color: #ff4757;
+    font-size: 0.75rem;
+    margin-top: 5px;
+    margin-left: 20px;
+    display: none; 
+    font-weight: 600;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
